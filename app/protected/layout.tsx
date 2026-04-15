@@ -14,6 +14,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     <div className="flex w-full max-w-5xl items-center justify-between p-3 px-5 text-sm">
                         <div className="flex items-center gap-5 font-semibold">
                             <Link href={"/"}>Next.js Supabase Starter</Link>
+                            <Link
+                                href="/protected/profile"
+                                className="text-muted-foreground hover:text-foreground text-sm font-normal"
+                            >
+                                프로필
+                            </Link>
                             <div className="flex items-center gap-2">
                                 <DeployButton />
                             </div>
