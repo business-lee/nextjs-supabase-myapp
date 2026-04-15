@@ -14,12 +14,7 @@
         },
         "sequential-thinking": {
             "command": "cmd",
-            "args": [
-                "/c",
-                "npx",
-                "-y",
-                "@modelcontextprotocol/server-sequential-thinking"
-            ]
+            "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
         },
         "context7": {
             "type": "http",

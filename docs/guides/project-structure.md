@@ -23,14 +23,14 @@
 
 Next.js는 애플리케이션 코드와 정적 자산을 최상위 폴더로 조직합니다.
 
-| 폴더 | 설명 |
-|------|------|
-| `app/` | App Router - 라우팅, 레이아웃, 페이지 정의 |
-| `public/` | 정적 자산 (이미지, 폰트 등) - URL로 직접 접근 가능 |
-| `components/` | 재사용 가능한 React 컴포넌트 |
-| `lib/` | 유틸리티 함수, 외부 서비스 클라이언트 |
-| `src/` | (선택) 애플리케이션 소스 폴더 - 설정 파일과 소스 분리 시 사용 |
-| `docs/` | 프로젝트 문서 |
+| 폴더          | 설명                                                          |
+| ------------- | ------------------------------------------------------------- |
+| `app/`        | App Router - 라우팅, 레이아웃, 페이지 정의                    |
+| `public/`     | 정적 자산 (이미지, 폰트 등) - URL로 직접 접근 가능            |
+| `components/` | 재사용 가능한 React 컴포넌트                                  |
+| `lib/`        | 유틸리티 함수, 외부 서비스 클라이언트                         |
+| `src/`        | (선택) 애플리케이션 소스 폴더 - 설정 파일과 소스 분리 시 사용 |
+| `docs/`       | 프로젝트 문서                                                 |
 
 > **이 프로젝트 선택**: `app/`, `components/`, `lib/`를 최상위에 두는 방식을 채택합니다.
 > `src/` 폴더는 사용하지 않습니다.
@@ -39,22 +39,22 @@ Next.js는 애플리케이션 코드와 정적 자산을 최상위 폴더로 조
 
 ## 2. 최상위 파일 목록
 
-| 파일 | 설명 |
-|------|------|
-| `next.config.ts` | Next.js 설정 파일 |
-| `package.json` | 프로젝트 의존성 및 스크립트 |
-| `tsconfig.json` | TypeScript 설정 |
-| `tailwind.config.ts` | Tailwind CSS 설정 |
-| `components.json` | shadcn/ui 설정 |
-| `eslint.config.mjs` | ESLint 설정 |
-| `postcss.config.mjs` | PostCSS 설정 |
-| `proxy.ts` | Next.js 요청 프록시 |
-| `.env` | 환경 변수 (버전 관리 제외) |
-| `.env.local` | 로컬 환경 변수 (버전 관리 제외) |
-| `.env.production` | 프로덕션 환경 변수 (버전 관리 제외) |
-| `.env.development` | 개발 환경 변수 (버전 관리 제외) |
-| `next-env.d.ts` | Next.js TypeScript 선언 파일 (버전 관리 제외) |
-| `.gitignore` | Git 무시 파일/폴더 목록 |
+| 파일                 | 설명                                          |
+| -------------------- | --------------------------------------------- |
+| `next.config.ts`     | Next.js 설정 파일                             |
+| `package.json`       | 프로젝트 의존성 및 스크립트                   |
+| `tsconfig.json`      | TypeScript 설정                               |
+| `tailwind.config.ts` | Tailwind CSS 설정                             |
+| `components.json`    | shadcn/ui 설정                                |
+| `eslint.config.mjs`  | ESLint 설정                                   |
+| `postcss.config.mjs` | PostCSS 설정                                  |
+| `proxy.ts`           | Next.js 요청 프록시                           |
+| `.env`               | 환경 변수 (버전 관리 제외)                    |
+| `.env.local`         | 로컬 환경 변수 (버전 관리 제외)               |
+| `.env.production`    | 프로덕션 환경 변수 (버전 관리 제외)           |
+| `.env.development`   | 개발 환경 변수 (버전 관리 제외)               |
+| `next-env.d.ts`      | Next.js TypeScript 선언 파일 (버전 관리 제외) |
+| `.gitignore`         | Git 무시 파일/폴더 목록                       |
 
 ---
 
@@ -62,17 +62,17 @@ Next.js는 애플리케이션 코드와 정적 자산을 최상위 폴더로 조
 
 `app/` 디렉토리 내의 특수 파일명이 라우트의 동작을 결정합니다.
 
-| 파일명 | 확장자 | 역할 |
-|--------|--------|------|
-| `layout` | `.tsx` `.jsx` `.js` | 공유 레이아웃 (헤더, 네비게이션, 푸터 등) |
-| `page` | `.tsx` `.jsx` `.js` | 라우트를 공개적으로 노출하는 페이지 |
-| `loading` | `.tsx` `.jsx` `.js` | 로딩 스켈레톤 UI (Suspense 경계) |
-| `not-found` | `.tsx` `.jsx` `.js` | 404 Not Found UI |
-| `error` | `.tsx` `.jsx` `.js` | 에러 경계 UI |
-| `global-error` | `.tsx` `.jsx` `.js` | 전역 에러 UI |
-| `route` | `.ts` `.js` | API 엔드포인트 |
-| `template` | `.tsx` `.jsx` `.js` | 재렌더링되는 레이아웃 (layout과 달리 상태 초기화) |
-| `default` | `.tsx` `.jsx` `.js` | 병렬 라우트 폴백 페이지 |
+| 파일명         | 확장자              | 역할                                              |
+| -------------- | ------------------- | ------------------------------------------------- |
+| `layout`       | `.tsx` `.jsx` `.js` | 공유 레이아웃 (헤더, 네비게이션, 푸터 등)         |
+| `page`         | `.tsx` `.jsx` `.js` | 라우트를 공개적으로 노출하는 페이지               |
+| `loading`      | `.tsx` `.jsx` `.js` | 로딩 스켈레톤 UI (Suspense 경계)                  |
+| `not-found`    | `.tsx` `.jsx` `.js` | 404 Not Found UI                                  |
+| `error`        | `.tsx` `.jsx` `.js` | 에러 경계 UI                                      |
+| `global-error` | `.tsx` `.jsx` `.js` | 전역 에러 UI                                      |
+| `route`        | `.ts` `.js`         | API 엔드포인트                                    |
+| `template`     | `.tsx` `.jsx` `.js` | 재렌더링되는 레이아웃 (layout과 달리 상태 초기화) |
+| `default`      | `.tsx` `.jsx` `.js` | 병렬 라우트 폴백 페이지                           |
 
 ### 라우트 공개 조건
 
@@ -95,20 +95,20 @@ app/
 
 폴더를 중첩하면 URL 세그먼트가 중첩됩니다.
 
-| 파일 경로 | URL |
-|-----------|-----|
-| `app/layout.tsx` | — (루트 레이아웃) |
-| `app/page.tsx` | `/` |
-| `app/blog/page.tsx` | `/blog` |
-| `app/blog/authors/page.tsx` | `/blog/authors` |
+| 파일 경로                   | URL               |
+| --------------------------- | ----------------- |
+| `app/layout.tsx`            | — (루트 레이아웃) |
+| `app/page.tsx`              | `/`               |
+| `app/blog/page.tsx`         | `/blog`           |
+| `app/blog/authors/page.tsx` | `/blog/authors`   |
 
 ### 4-2. 동적 라우트 (Dynamic Routes)
 
-| 패턴 | 예시 경로 | 매칭 URL |
-|------|-----------|----------|
-| `[slug]` | `app/blog/[slug]/page.tsx` | `/blog/my-post` |
-| `[...slug]` | `app/shop/[...slug]/page.tsx` | `/shop/clothes`, `/shop/clothes/shirts` |
-| `[[...slug]]` | `app/docs/[[...slug]]/page.tsx` | `/docs`, `/docs/api`, `/docs/api/ref` |
+| 패턴          | 예시 경로                       | 매칭 URL                                |
+| ------------- | ------------------------------- | --------------------------------------- |
+| `[slug]`      | `app/blog/[slug]/page.tsx`      | `/blog/my-post`                         |
+| `[...slug]`   | `app/shop/[...slug]/page.tsx`   | `/shop/clothes`, `/shop/clothes/shirts` |
+| `[[...slug]]` | `app/docs/[[...slug]]/page.tsx` | `/docs`, `/docs/api`, `/docs/api/ref`   |
 
 `params` prop을 통해 값에 접근합니다:
 
@@ -128,13 +128,14 @@ export default async function BlogPost({ params }: PageProps) {
 
 소괄호로 감싼 폴더는 **URL에 포함되지 않습니다**. 관련 라우트를 논리적으로 묶는 데 사용합니다.
 
-| 파일 경로 | URL |
-|-----------|-----|
-| `app/(marketing)/page.tsx` | `/` |
-| `app/(shop)/cart/page.tsx` | `/cart` |
+| 파일 경로                   | URL      |
+| --------------------------- | -------- |
+| `app/(marketing)/page.tsx`  | `/`      |
+| `app/(shop)/cart/page.tsx`  | `/cart`  |
 | `app/(auth)/login/page.tsx` | `/login` |
 
 **사용 목적:**
+
 - 사이트 섹션별 라우트 그룹화 (마케팅, 어드민, 인증 등)
 - 특정 라우트 집합에만 레이아웃 적용
 - 같은 세그먼트 수준에서 여러 루트 레이아웃 생성
@@ -155,24 +156,25 @@ app/
 
 언더스코어로 시작하는 폴더는 **라우팅 시스템에서 완전히 제외**됩니다.
 
-| 경로 | 설명 |
-|------|------|
-| `app/blog/_components/` | 라우트 불가, UI 유틸리티 보관 |
-| `app/blog/_lib/` | 라우트 불가, 내부 유틸리티 보관 |
+| 경로                    | 설명                            |
+| ----------------------- | ------------------------------- |
+| `app/blog/_components/` | 라우트 불가, UI 유틸리티 보관   |
+| `app/blog/_lib/`        | 라우트 불가, 내부 유틸리티 보관 |
 
 **사용 목적:**
+
 - UI 로직과 라우팅 로직 분리
 - 특정 라우트 전용 컴포넌트/유틸리티 코로케이션
 - 미래 Next.js 파일 컨벤션과의 이름 충돌 방지
 
 ### 4-5. 병렬 라우트와 인터셉트 라우트
 
-| 패턴 | 의미 | 대표 활용 사례 |
-|------|------|----------------|
-| `@folder` | 네임드 슬롯 | 사이드바 + 메인 콘텐츠 |
-| `(.)folder` | 같은 레벨 인터셉트 | 모달로 형제 라우트 미리보기 |
-| `(..)folder` | 부모 레벨 인터셉트 | 부모의 자식을 오버레이로 열기 |
-| `(...)folder` | 루트에서 인터셉트 | 현재 뷰에서 임의 라우트 표시 |
+| 패턴          | 의미               | 대표 활용 사례                |
+| ------------- | ------------------ | ----------------------------- |
+| `@folder`     | 네임드 슬롯        | 사이드바 + 메인 콘텐츠        |
+| `(.)folder`   | 같은 레벨 인터셉트 | 모달로 형제 라우트 미리보기   |
+| `(..)folder`  | 부모 레벨 인터셉트 | 부모의 자식을 오버레이로 열기 |
+| `(...)folder` | 루트에서 인터셉트  | 현재 뷰에서 임의 라우트 표시  |
 
 ---
 
@@ -360,25 +362,25 @@ nextjs-supabase-myapp/
 
 ### 파일명
 
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| 컴포넌트 파일 | kebab-case | `auth-button.tsx`, `login-form.tsx` |
+| 대상             | 규칙              | 예시                                    |
+| ---------------- | ----------------- | --------------------------------------- |
+| 컴포넌트 파일    | kebab-case        | `auth-button.tsx`, `login-form.tsx`     |
 | 라우트 특수 파일 | Next.js 지정 이름 | `page.tsx`, `layout.tsx`, `loading.tsx` |
-| API 라우트 | `route.ts` | `app/auth/confirm/route.ts` |
-| 유틸리티 파일 | kebab-case | `utils.ts`, `auth-helpers.ts` |
-| 훅 파일 | `use-` 접두사 | `use-auth.ts`, `use-theme.ts` |
-| 타입 정의 파일 | kebab-case | `auth-types.ts`, `database-types.ts` |
+| API 라우트       | `route.ts`        | `app/auth/confirm/route.ts`             |
+| 유틸리티 파일    | kebab-case        | `utils.ts`, `auth-helpers.ts`           |
+| 훅 파일          | `use-` 접두사     | `use-auth.ts`, `use-theme.ts`           |
+| 타입 정의 파일   | kebab-case        | `auth-types.ts`, `database-types.ts`    |
 
 ### 코드 내 네이밍
 
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| React 컴포넌트 | PascalCase | `AuthButton`, `LoginForm` |
-| Props 타입 | `컴포넌트이름Props` | `AuthButtonProps`, `LoginFormProps` |
-| 일반 함수/변수 | camelCase | `getUserData`, `isAuthenticated` |
-| 상수 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT`, `API_BASE_URL` |
-| 훅 | `use` 접두사 + camelCase | `useAuth`, `useTheme` |
-| 타입/인터페이스 | PascalCase | `UserProfile`, `AuthState` |
+| 대상            | 규칙                     | 예시                                |
+| --------------- | ------------------------ | ----------------------------------- |
+| React 컴포넌트  | PascalCase               | `AuthButton`, `LoginForm`           |
+| Props 타입      | `컴포넌트이름Props`      | `AuthButtonProps`, `LoginFormProps` |
+| 일반 함수/변수  | camelCase                | `getUserData`, `isAuthenticated`    |
+| 상수            | UPPER_SNAKE_CASE         | `MAX_RETRY_COUNT`, `API_BASE_URL`   |
+| 훅              | `use` 접두사 + camelCase | `useAuth`, `useTheme`               |
+| 타입/인터페이스 | PascalCase               | `UserProfile`, `AuthState`          |
 
 > **주의**: `any` 타입 사용 금지, `enum` 타입 사용 금지
 
@@ -399,18 +401,18 @@ import { createClient } from "@/lib/supabase/client";
 
 ### 앱 아이콘
 
-| 파일 | 위치 | 용도 |
-|------|------|------|
-| `favicon.ico` | `app/favicon.ico` | 브라우저 탭 아이콘 |
-| `icon.png` | `app/icon.png` | 앱 아이콘 |
+| 파일             | 위치                 | 용도                 |
+| ---------------- | -------------------- | -------------------- |
+| `favicon.ico`    | `app/favicon.ico`    | 브라우저 탭 아이콘   |
+| `icon.png`       | `app/icon.png`       | 앱 아이콘            |
 | `apple-icon.png` | `app/apple-icon.png` | Apple 홈 화면 아이콘 |
 
 ### 소셜 미디어 이미지
 
-| 파일 | 위치 | 용도 |
-|------|------|------|
+| 파일                  | 위치                      | 용도                       |
+| --------------------- | ------------------------- | -------------------------- |
 | `opengraph-image.png` | `app/opengraph-image.png` | Open Graph 미리보기 이미지 |
-| `twitter-image.png` | `app/twitter-image.png` | Twitter 카드 이미지 |
+| `twitter-image.png`   | `app/twitter-image.png`   | Twitter 카드 이미지        |
 
 코드로 동적 생성도 가능합니다:
 
@@ -429,12 +431,12 @@ export default function OgImage() {
 
 ### SEO 파일
 
-| 파일 | 위치 | 용도 |
-|------|------|------|
-| `sitemap.xml` | `app/sitemap.xml` | 검색엔진 사이트맵 |
-| `sitemap.ts` | `app/sitemap.ts` | 동적 사이트맵 생성 |
-| `robots.txt` | `app/robots.txt` | 크롤러 접근 제어 |
-| `robots.ts` | `app/robots.ts` | 동적 robots 파일 생성 |
+| 파일          | 위치              | 용도                  |
+| ------------- | ----------------- | --------------------- |
+| `sitemap.xml` | `app/sitemap.xml` | 검색엔진 사이트맵     |
+| `sitemap.ts`  | `app/sitemap.ts`  | 동적 사이트맵 생성    |
+| `robots.txt`  | `app/robots.txt`  | 크롤러 접근 제어      |
+| `robots.ts`   | `app/robots.ts`   | 동적 robots 파일 생성 |
 
 ---
 

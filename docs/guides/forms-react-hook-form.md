@@ -8,14 +8,15 @@
 
 ## 1. 개요
 
-| 도구 | 역할 |
-|------|------|
-| **React Hook Form** | 폼 상태 관리, 제출 처리, 성능 최적화 |
-| **Zod** | 스키마 기반 타입 안전 유효성 검사 |
-| **@hookform/resolvers** | React Hook Form ↔ Zod 연결 브릿지 |
-| **Server Actions** | 서버에서 폼 데이터 처리 (DB 저장, 인증 등) |
+| 도구                    | 역할                                       |
+| ----------------------- | ------------------------------------------ |
+| **React Hook Form**     | 폼 상태 관리, 제출 처리, 성능 최적화       |
+| **Zod**                 | 스키마 기반 타입 안전 유효성 검사          |
+| **@hookform/resolvers** | React Hook Form ↔ Zod 연결 브릿지          |
+| **Server Actions**      | 서버에서 폼 데이터 처리 (DB 저장, 인증 등) |
 
 **이 조합을 사용하는 이유:**
+
 - 불필요한 리렌더링 없이 고성능 폼 관리 (React Hook Form)
 - 클라이언트/서버 모두에서 동일한 스키마로 검증 (Zod)
 - API 라우트 없이 서버 로직 직접 호출 (Server Actions)
@@ -32,16 +33,16 @@ npm install react-hook-form @hookform/resolvers zod
 
 ## 3. 핵심 규칙 요약
 
-| 규칙 | 내용 |
-|------|------|
-| 폼 컴포넌트 | 반드시 `'use client'` 선언 |
-| 스키마 타입 | `z.infer<typeof formSchema>`로 타입 추론 |
-| `any` 타입 | 사용 금지 — Zod 스키마로 타입 보장 |
-| `enum` 타입 | 사용 금지 — `z.union([z.literal(...)])` 또는 `z.enum([...])` 사용 |
-| 검증 모드 | 기본값 `"onSubmit"`, UX 고려 시 `"onBlur"` |
-| 에러 표시 | `data-invalid` + `aria-invalid` + `<FieldError />` 세트로 처리 |
-| Server Actions | `useTransition` + `startTransition`으로 비동기 처리 |
-| 배열 필드 key | 반드시 `field.id` 사용 (인덱스 사용 금지) |
+| 규칙           | 내용                                                              |
+| -------------- | ----------------------------------------------------------------- |
+| 폼 컴포넌트    | 반드시 `'use client'` 선언                                        |
+| 스키마 타입    | `z.infer<typeof formSchema>`로 타입 추론                          |
+| `any` 타입     | 사용 금지 — Zod 스키마로 타입 보장                                |
+| `enum` 타입    | 사용 금지 — `z.union([z.literal(...)])` 또는 `z.enum([...])` 사용 |
+| 검증 모드      | 기본값 `"onSubmit"`, UX 고려 시 `"onBlur"`                        |
+| 에러 표시      | `data-invalid` + `aria-invalid` + `<FieldError />` 세트로 처리    |
+| Server Actions | `useTransition` + `startTransition`으로 비동기 처리               |
+| 배열 필드 key  | 반드시 `field.id` 사용 (인덱스 사용 금지)                         |
 
 ---
 
@@ -50,7 +51,7 @@ npm install react-hook-form @hookform/resolvers zod
 ### 4-1. 기본 스키마
 
 ```tsx
-import * as z from "zod"
+import * as z from "zod";
 
 const formSchema = z.object({
     title: z
@@ -65,7 +66,7 @@ const formSchema = z.object({
     age: z.number().min(0).max(120),
     isActive: z.boolean(),
     language: z.string().optional(),
-})
+});
 ```
 
 ### 4-2. 고급 스키마 패턴
@@ -83,15 +84,15 @@ const passwordSchema = z
                 code: z.ZodIssueCode.custom,
                 message: "비밀번호가 일치하지 않습니다.",
                 path: ["confirmPassword"],
-            })
+            });
         }
-    })
+    });
 
 // 선택적 문자열 (빈 문자열 허용)
-const optionalString = z.string().optional().or(z.literal(""))
+const optionalString = z.string().optional().or(z.literal(""));
 
 // 숫자 입력 (input은 항상 string → 변환 필요)
-const numberField = z.coerce.number().min(1, "1 이상의 숫자를 입력하세요.")
+const numberField = z.coerce.number().min(1, "1 이상의 숫자를 입력하세요.");
 ```
 
 ### 4-3. 배열 스키마
@@ -102,11 +103,11 @@ const formSchema = z.object({
         .array(
             z.object({
                 address: z.string().email("올바른 이메일 형식이 아닙니다."),
-            })
+            }),
         )
         .min(1, "이메일을 최소 1개 이상 추가하세요.")
         .max(5, "이메일은 최대 5개까지 추가할 수 있습니다."),
-})
+});
 ```
 
 ---
@@ -114,17 +115,17 @@ const formSchema = z.object({
 ## 5. useForm 설정
 
 ```tsx
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 const formSchema = z.object({
     title: z.string().min(5, "제목은 최소 5자 이상이어야 합니다."),
     description: z.string().min(20, "내용은 최소 20자 이상이어야 합니다."),
-})
+});
 
 // z.infer로 타입 자동 추론 — 별도 타입 선언 불필요
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 export function ExampleForm() {
     const form = useForm<FormValues>({
@@ -134,17 +135,13 @@ export function ExampleForm() {
             description: "",
         },
         mode: "onBlur", // 검증 모드 설정 (기본값: "onSubmit")
-    })
+    });
 
     function onSubmit(data: FormValues) {
-        console.log(data)
+        console.log(data);
     }
 
-    return (
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-            {/* 필드 구성 */}
-        </form>
-    )
+    return <form onSubmit={form.handleSubmit(onSubmit)}>{/* 필드 구성 */}</form>;
 }
 ```
 
@@ -156,16 +153,16 @@ export function ExampleForm() {
 const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onBlur", // 검증 시점 설정
-})
+});
 ```
 
-| 모드 | 검증 시점 | 권장 상황 |
-|------|----------|----------|
-| `"onSubmit"` | 제출 시 (기본값) | 간단한 폼 |
-| `"onBlur"` | 필드에서 포커스 이탈 시 | 일반적인 회원가입/설정 폼 |
-| `"onChange"` | 입력 변경마다 | 실시간 검증이 필요한 경우 |
-| `"onTouched"` | 첫 blur 이후 변경마다 | `"onChange"`보다 덜 공격적인 UX |
-| `"all"` | blur + change 모두 | 엄격한 검증이 필요한 경우 |
+| 모드          | 검증 시점               | 권장 상황                       |
+| ------------- | ----------------------- | ------------------------------- |
+| `"onSubmit"`  | 제출 시 (기본값)        | 간단한 폼                       |
+| `"onBlur"`    | 필드에서 포커스 이탈 시 | 일반적인 회원가입/설정 폼       |
+| `"onChange"`  | 입력 변경마다           | 실시간 검증이 필요한 경우       |
+| `"onTouched"` | 첫 blur 이후 변경마다   | `"onChange"`보다 덜 공격적인 UX |
+| `"all"`       | blur + change 모두      | 엄격한 검증이 필요한 경우       |
 
 ---
 
@@ -176,9 +173,9 @@ const form = useForm<FormValues>({
 ### 7-1. Input (텍스트 입력)
 
 ```tsx
-import { Controller } from "react-hook-form"
-import { Field, FieldLabel, FieldError } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { Controller } from "react-hook-form";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 <Controller
     name="title"
@@ -195,13 +192,13 @@ import { Input } from "@/components/ui/input"
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
     )}
-/>
+/>;
 ```
 
 ### 7-2. Textarea
 
 ```tsx
-import { Textarea } from "@/components/ui/textarea"
+import { Textarea } from "@/components/ui/textarea";
 
 <Controller
     name="description"
@@ -219,7 +216,7 @@ import { Textarea } from "@/components/ui/textarea"
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
     )}
-/>
+/>;
 ```
 
 ### 7-3. Select
@@ -233,7 +230,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 <Controller
     name="language"
@@ -241,15 +238,8 @@ import {
     render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor={field.name}>언어</FieldLabel>
-            <Select
-                name={field.name}
-                value={field.value}
-                onValueChange={field.onChange}
-            >
-                <SelectTrigger
-                    id={field.name}
-                    aria-invalid={fieldState.invalid}
-                >
+            <Select name={field.name} value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id={field.name} aria-invalid={fieldState.invalid}>
                     <SelectValue placeholder="선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
@@ -260,7 +250,7 @@ import {
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
     )}
-/>
+/>;
 ```
 
 ### 7-4. Checkbox (배열)
@@ -359,7 +349,7 @@ const plans = [
 ### 7-6. Switch
 
 ```tsx
-import { Switch } from "@/components/ui/switch"
+import { Switch } from "@/components/ui/switch";
 
 <Controller
     name="twoFactor"
@@ -382,7 +372,7 @@ import { Switch } from "@/components/ui/switch"
             />
         </Field>
     )}
-/>
+/>;
 ```
 
 ---
@@ -420,14 +410,14 @@ import { Switch } from "@/components/ui/switch"
 ### 기본 설정
 
 ```tsx
-import { useFieldArray, useForm } from "react-hook-form"
+import { useFieldArray, useForm } from "react-hook-form";
 
-const form = useForm<FormValues>({ resolver: zodResolver(formSchema) })
+const form = useForm<FormValues>({ resolver: zodResolver(formSchema) });
 
 const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "emails", // 스키마의 배열 필드명
-})
+});
 ```
 
 ### 항목 추가 / 제거
@@ -441,44 +431,42 @@ const { fields, append, remove } = useFieldArray({
     disabled={fields.length >= 5}
 >
     이메일 추가
-</Button>
+</Button>;
 
 // 제거 (항목이 2개 이상일 때만 표시)
-{fields.length > 1 && (
-    <Button
-        type="button"
-        variant="ghost"
-        onClick={() => remove(index)}
-    >
-        삭제
-    </Button>
-)}
+{
+    fields.length > 1 && (
+        <Button type="button" variant="ghost" onClick={() => remove(index)}>
+            삭제
+        </Button>
+    );
+}
 ```
 
 ### 배열 Controller 패턴
 
 ```tsx
-{fields.map((field, index) => (
-    <Controller
-        key={field.id}  // 반드시 field.id 사용 (index 사용 금지)
-        name={`emails.${index}.address`}
-        control={form.control}
-        render={({ field: controllerField, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-                <Input
-                    {...controllerField}
-                    id={`email-${index}`}
-                    aria-invalid={fieldState.invalid}
-                    type="email"
-                    placeholder="name@example.com"
-                />
-                {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                )}
-            </Field>
-        )}
-    />
-))}
+{
+    fields.map((field, index) => (
+        <Controller
+            key={field.id} // 반드시 field.id 사용 (index 사용 금지)
+            name={`emails.${index}.address`}
+            control={form.control}
+            render={({ field: controllerField, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                    <Input
+                        {...controllerField}
+                        id={`email-${index}`}
+                        aria-invalid={fieldState.invalid}
+                        type="email"
+                        placeholder="name@example.com"
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+            )}
+        />
+    ));
+}
 ```
 
 ---
@@ -489,13 +477,13 @@ const { fields, append, remove } = useFieldArray({
 // 기본값으로 리셋
 <Button type="button" variant="outline" onClick={() => form.reset()}>
     초기화
-</Button>
+</Button>;
 
 // 특정 값으로 리셋 (예: 서버에서 받아온 데이터로)
 form.reset({
     title: "새 제목",
     description: "새 내용",
-})
+});
 ```
 
 ---
@@ -507,53 +495,51 @@ Server Actions는 `useTransition`으로 비동기 처리합니다. 폼 검증은
 ### 클라이언트 폼 컴포넌트
 
 ```tsx
-'use client'
+"use client";
 
-import { useTransition } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { createPostAction } from "@/app/actions/post"
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { createPostAction } from "@/app/actions/post";
 
 const formSchema = z.object({
     title: z.string().min(5, "제목은 최소 5자 이상이어야 합니다."),
     content: z.string().min(10, "내용은 최소 10자 이상이어야 합니다."),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 export function CreatePostForm() {
-    const [isPending, startTransition] = useTransition()
+    const [isPending, startTransition] = useTransition();
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: { title: "", content: "" },
-    })
+    });
 
     function onSubmit(data: FormValues) {
         startTransition(async () => {
-            const result = await createPostAction(data)
+            const result = await createPostAction(data);
             if (result.error) {
-                form.setError("root", { message: result.error })
+                form.setError("root", { message: result.error });
             } else {
-                form.reset()
+                form.reset();
             }
-        })
+        });
     }
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit)}>
             {/* 서버 에러 표시 */}
             {form.formState.errors.root && (
-                <p className="text-destructive text-sm">
-                    {form.formState.errors.root.message}
-                </p>
+                <p className="text-destructive text-sm">{form.formState.errors.root.message}</p>
             )}
             {/* 필드 구성 */}
             <Button type="submit" disabled={isPending}>
                 {isPending ? "저장 중..." : "저장"}
             </Button>
         </form>
-    )
+    );
 }
 ```
 
@@ -561,29 +547,29 @@ export function CreatePostForm() {
 
 ```tsx
 // app/actions/post.ts
-'use server'
+"use server";
 
-import * as z from "zod"
+import * as z from "zod";
 
 const formSchema = z.object({
     title: z.string().min(5),
     content: z.string().min(10),
-})
+});
 
 export async function createPostAction(
-    data: z.infer<typeof formSchema>
+    data: z.infer<typeof formSchema>,
 ): Promise<{ error?: string }> {
     // 서버 측에서도 Zod로 재검증 (보안)
-    const parsed = formSchema.safeParse(data)
+    const parsed = formSchema.safeParse(data);
     if (!parsed.success) {
-        return { error: "잘못된 데이터입니다." }
+        return { error: "잘못된 데이터입니다." };
     }
 
     try {
         // DB 저장 로직
-        return {}
+        return {};
     } catch {
-        return { error: "저장에 실패했습니다." }
+        return { error: "저장에 실패했습니다." };
     }
 }
 ```
@@ -607,15 +593,15 @@ const nextConfig = {
             bodySizeLimit: "2mb",
         },
     },
-}
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
-| 옵션 | 기본값 | 설명 |
-|------|--------|------|
-| `allowedOrigins` | 동일 출처만 허용 | CSRF 방지를 위한 허용 도메인 목록 |
-| `bodySizeLimit` | `"1mb"` | 요청 바디 최대 크기 (bytes, kb, mb 단위 지원) |
+| 옵션             | 기본값           | 설명                                          |
+| ---------------- | ---------------- | --------------------------------------------- |
+| `allowedOrigins` | 동일 출처만 허용 | CSRF 방지를 위한 허용 도메인 목록             |
+| `bodySizeLimit`  | `"1mb"`          | 요청 바디 최대 크기 (bytes, kb, mb 단위 지원) |
 
 ---
 
@@ -649,10 +635,10 @@ export default nextConfig
 
 ```tsx
 // HTML input은 항상 string 반환 — z.number()만 쓰면 검증 실패
-const schema = z.object({ age: z.number() })
+const schema = z.object({ age: z.number() });
 
 // 올바른 방법 — z.coerce.number()로 자동 변환
-const schema = z.object({ age: z.coerce.number().min(0) })
+const schema = z.object({ age: z.coerce.number().min(0) });
 ```
 
 ### ❌ Server Actions에서 검증 생략
@@ -660,8 +646,8 @@ const schema = z.object({ age: z.coerce.number().min(0) })
 ```tsx
 // 클라이언트 검증만 믿으면 보안 취약 — 서버에서도 반드시 재검증
 export async function action(data: FormValues) {
-    const parsed = formSchema.safeParse(data) // 서버 측 재검증 필수
-    if (!parsed.success) return { error: "잘못된 데이터" }
+    const parsed = formSchema.safeParse(data); // 서버 측 재검증 필수
+    if (!parsed.success) return { error: "잘못된 데이터" };
     // ...
 }
 ```
@@ -670,8 +656,8 @@ export async function action(data: FormValues) {
 
 ```tsx
 // 잘못된 방법 — 리렌더링 최적화 불가
-const formState = form.formState
+const formState = form.formState;
 
 // 올바른 방법 — 필요한 것만 구조 분해
-const { isSubmitting, errors } = form.formState
+const { isSubmitting, errors } = form.formState;
 ```

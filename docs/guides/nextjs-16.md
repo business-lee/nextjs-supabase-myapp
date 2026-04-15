@@ -8,12 +8,12 @@
 
 ## 1. 시스템 요구사항
 
-| 항목 | 최소 요구사항 |
-|------|-------------|
-| Node.js | 20.9+ |
-| TypeScript | 5.1.0+ |
-| Chrome / Edge / Firefox | 111+ |
-| Safari | 16.4+ |
+| 항목                    | 최소 요구사항 |
+| ----------------------- | ------------- |
+| Node.js                 | 20.9+         |
+| TypeScript              | 5.1.0+        |
+| Chrome / Edge / Firefox | 111+          |
+| Safari                  | 16.4+         |
 
 ---
 
@@ -31,14 +31,15 @@
 }
 ```
 
-| 스크립트 | 설명 |
-|---------|------|
-| `next dev` | Turbopack(기본 번들러)으로 개발 서버 시작 |
-| `next build` | 프로덕션 빌드 생성 |
-| `next start` | 프로덕션 서버 시작 |
-| `eslint` | 린트 검사 실행 |
+| 스크립트     | 설명                                      |
+| ------------ | ----------------------------------------- |
+| `next dev`   | Turbopack(기본 번들러)으로 개발 서버 시작 |
+| `next build` | 프로덕션 빌드 생성                        |
+| `next start` | 프로덕션 서버 시작                        |
+| `eslint`     | 린트 검사 실행                            |
 
 **중요 변경사항 (Next.js 16)**:
+
 - Turbopack이 기본 번들러. Webpack 사용 시 `next dev --webpack` 또는 `next build --webpack`
 - `next build`가 더 이상 린터를 자동 실행하지 않음 → npm scripts로 별도 실행 필요
 
@@ -48,26 +49,26 @@
 
 ### 최상위 폴더
 
-| 폴더 | 역할 |
-|------|------|
-| `app/` | App Router (라우팅의 핵심) |
-| `pages/` | Pages Router (레거시) |
+| 폴더      | 역할                        |
+| --------- | --------------------------- |
+| `app/`    | App Router (라우팅의 핵심)  |
+| `pages/`  | Pages Router (레거시)       |
 | `public/` | 정적 에셋 (이미지, 폰트 등) |
-| `src/` | 선택적 소스 폴더 |
+| `src/`    | 선택적 소스 폴더            |
 
 ### 라우팅 파일 컨벤션
 
-| 파일명 | 확장자 | 역할 |
-|--------|--------|------|
-| `layout` | `.tsx` `.jsx` | 레이아웃 (공유 UI) |
-| `page` | `.tsx` `.jsx` | 페이지 (라우트 공개) |
-| `loading` | `.tsx` `.jsx` | 로딩 UI (Suspense 래퍼) |
-| `error` | `.tsx` `.jsx` | 에러 UI (Error Boundary) |
-| `not-found` | `.tsx` `.jsx` | 404 UI |
-| `global-error` | `.tsx` `.jsx` | 전역 에러 UI |
-| `route` | `.ts` | API 엔드포인트 |
-| `template` | `.tsx` `.jsx` | 리렌더링 레이아웃 |
-| `default` | `.tsx` `.jsx` | 병렬 라우트 폴백 |
+| 파일명         | 확장자        | 역할                     |
+| -------------- | ------------- | ------------------------ |
+| `layout`       | `.tsx` `.jsx` | 레이아웃 (공유 UI)       |
+| `page`         | `.tsx` `.jsx` | 페이지 (라우트 공개)     |
+| `loading`      | `.tsx` `.jsx` | 로딩 UI (Suspense 래퍼)  |
+| `error`        | `.tsx` `.jsx` | 에러 UI (Error Boundary) |
+| `not-found`    | `.tsx` `.jsx` | 404 UI                   |
+| `global-error` | `.tsx` `.jsx` | 전역 에러 UI             |
+| `route`        | `.ts`         | API 엔드포인트           |
+| `template`     | `.tsx` `.jsx` | 리렌더링 레이아웃        |
+| `default`      | `.tsx` `.jsx` | 병렬 라우트 폴백         |
 
 ### 컴포넌트 렌더링 계층 순서
 
@@ -82,14 +83,14 @@ layout.js
 
 ### 라우트 패턴
 
-| 패턴 | URL 예시 | 설명 |
-|------|---------|------|
-| `app/blog/page.tsx` | `/blog` | 일반 라우트 |
-| `app/blog/[slug]/page.tsx` | `/blog/my-post` | 동적 세그먼트 |
-| `app/shop/[...slug]/page.tsx` | `/shop/a/b/c` | Catch-all |
-| `app/docs/[[...slug]]/page.tsx` | `/docs`, `/docs/a/b` | 선택적 Catch-all |
-| `app/(marketing)/page.tsx` | `/` | 라우트 그룹 (URL 미포함) |
-| `app/blog/_components/` | — | 프라이빗 폴더 (라우팅 제외) |
+| 패턴                            | URL 예시             | 설명                        |
+| ------------------------------- | -------------------- | --------------------------- |
+| `app/blog/page.tsx`             | `/blog`              | 일반 라우트                 |
+| `app/blog/[slug]/page.tsx`      | `/blog/my-post`      | 동적 세그먼트               |
+| `app/shop/[...slug]/page.tsx`   | `/shop/a/b/c`        | Catch-all                   |
+| `app/docs/[[...slug]]/page.tsx` | `/docs`, `/docs/a/b` | 선택적 Catch-all            |
+| `app/(marketing)/page.tsx`      | `/`                  | 라우트 그룹 (URL 미포함)    |
+| `app/blog/_components/`         | —                    | 프라이빗 폴더 (라우팅 제외) |
 
 ### 특수 폴더 규칙
 
@@ -110,7 +111,7 @@ layout.js
 
 ```tsx
 export default function Page() {
-    return <h1>페이지 내용</h1>
+    return <h1>페이지 내용</h1>;
 }
 ```
 
@@ -121,16 +122,12 @@ export default function Page() {
 - **Root Layout** (`app/layout.tsx`)은 필수이며 반드시 `<html>`, `<body>` 태그 포함
 
 ```tsx
-export default function RootLayout({
-    children,
-}: {
-    children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="ko">
             <body>{children}</body>
         </html>
-    )
+    );
 }
 ```
 
@@ -139,23 +136,19 @@ export default function RootLayout({
 `params`는 **Promise 타입**으로 `await` 필요:
 
 ```tsx
-export default async function BlogPostPage({
-    params,
-}: {
-    params: Promise<{ slug: string }>
-}) {
-    const { slug } = await params
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
     // ...
 }
 ```
 
 ### searchParams 사용 규칙
 
-| 상황 | 사용 방법 |
-|------|---------|
-| 서버 컴포넌트 페이지에서 데이터 로딩 (페이지네이션, DB 필터링) | `searchParams` prop (동적 렌더링 전환됨) |
-| 클라이언트에서만 사용 (이미 로드된 목록 필터링) | `useSearchParams` 훅 |
-| 콜백/이벤트 핸들러에서 리렌더링 없이 읽기 | `new URLSearchParams(window.location.search)` |
+| 상황                                                           | 사용 방법                                     |
+| -------------------------------------------------------------- | --------------------------------------------- |
+| 서버 컴포넌트 페이지에서 데이터 로딩 (페이지네이션, DB 필터링) | `searchParams` prop (동적 렌더링 전환됨)      |
+| 클라이언트에서만 사용 (이미 로드된 목록 필터링)                | `useSearchParams` 훅                          |
+| 콜백/이벤트 핸들러에서 리렌더링 없이 읽기                      | `new URLSearchParams(window.location.search)` |
 
 ### PageProps / LayoutProps 헬퍼 타입
 
@@ -163,16 +156,16 @@ export default async function BlogPostPage({
 
 ```tsx
 // app/blog/[slug]/page.tsx
-export default async function Page(props: PageProps<'/blog/[slug]'>) {
-    const { slug } = await props.params
-    return <h1>블로그 포스트: {slug}</h1>
+export default async function Page(props: PageProps<"/blog/[slug]">) {
+    const { slug } = await props.params;
+    return <h1>블로그 포스트: {slug}</h1>;
 }
 ```
 
 ```tsx
 // app/dashboard/layout.tsx
-export default function Layout(props: LayoutProps<'/dashboard'>) {
-    return <section>{props.children}</section>
+export default function Layout(props: LayoutProps<"/dashboard">) {
+    return <section>{props.children}</section>;
 }
 ```
 
@@ -198,7 +191,7 @@ import Link from 'next/link'
 ```tsx
 // app/blog/[slug]/loading.tsx
 export default function Loading() {
-    return <LoadingSkeleton />
+    return <LoadingSkeleton />;
 }
 ```
 
@@ -208,8 +201,8 @@ export default function Loading() {
 
 ```tsx
 export async function generateStaticParams() {
-    const posts = await getPosts()
-    return posts.map((post) => ({ slug: post.slug }))
+    const posts = await getPosts();
+    return posts.map((post) => ({ slug: post.slug }));
 }
 ```
 
@@ -218,24 +211,22 @@ export async function generateStaticParams() {
 `useLinkStatus` 훅으로 전환 중 피드백 제공:
 
 ```tsx
-'use client'
+"use client";
 
-import { useLinkStatus } from 'next/link'
+import { useLinkStatus } from "next/link";
 
 export default function LoadingIndicator() {
-    const { pending } = useLinkStatus()
-    return (
-        <span className={`link-hint ${pending ? 'is-pending' : ''}`} />
-    )
+    const { pending } = useLinkStatus();
+    return <span className={`link-hint ${pending ? "is-pending" : ""}`} />;
 }
 ```
 
 ### 프리페칭 제어
 
-| 상황 | 설정 |
-|------|------|
-| 대규모 목록에서 리소스 절약 | `<Link prefetch={false}>` |
-| hover 시에만 프리페칭 | `prefetch={active ? null : false}` + `onMouseEnter` |
+| 상황                        | 설정                                                |
+| --------------------------- | --------------------------------------------------- |
+| 대규모 목록에서 리소스 절약 | `<Link prefetch={false}>`                           |
+| hover 시에만 프리페칭       | `prefetch={active ? null : false}` + `onMouseEnter` |
 
 ### 네이티브 히스토리 API
 
@@ -243,10 +234,10 @@ export default function LoadingIndicator() {
 
 ```tsx
 // 새 히스토리 항목 추가 (뒤로가기 가능)
-window.history.pushState(null, '', `?${params.toString()}`)
+window.history.pushState(null, "", `?${params.toString()}`);
 
 // 현재 항목 교체 (뒤로가기 불가)
-window.history.replaceState(null, '', newPath)
+window.history.replaceState(null, "", newPath);
 ```
 
 ---
@@ -271,10 +262,10 @@ export async function POST(request: Request) {}
 
 `page.tsx`와 같은 세그먼트 레벨에 `route.ts` 배치 불가:
 
-| 파일 구성 | 결과 |
-|---------|------|
-| `app/page.js` + `app/route.js` | 충돌 (불가) |
-| `app/page.js` + `app/api/route.js` | 유효 |
+| 파일 구성                          | 결과        |
+| ---------------------------------- | ----------- |
+| `app/page.js` + `app/route.js`     | 충돌 (불가) |
+| `app/page.js` + `app/api/route.js` | 유효        |
 
 ### 캐싱 규칙
 
@@ -282,7 +273,7 @@ export async function POST(request: Request) {}
 - GET 메서드에서 캐시하려면:
 
 ```ts
-export const dynamic = 'force-static'
+export const dynamic = "force-static";
 
 export async function GET() {
     // ...
@@ -294,30 +285,30 @@ export async function GET() {
 ```ts
 // 잘못된 방법 (불가)
 export async function GET() {
-    'use cache'  // 오류
+    "use cache"; // 오류
 }
 
 // 올바른 방법
 export async function GET() {
-    const data = await getCachedData()
-    return Response.json(data)
+    const data = await getCachedData();
+    return Response.json(data);
 }
 
 async function getCachedData() {
-    'use cache'
-    cacheLife('hours')
-    return await db.query('SELECT * FROM products')
+    "use cache";
+    cacheLife("hours");
+    return await db.query("SELECT * FROM products");
 }
 ```
 
 ### TypeScript 타입 헬퍼
 
 ```ts
-import type { NextRequest } from 'next/server'
+import type { NextRequest } from "next/server";
 
-export async function GET(_req: NextRequest, ctx: RouteContext<'/users/[id]'>) {
-    const { id } = await ctx.params
-    return Response.json({ id })
+export async function GET(_req: NextRequest, ctx: RouteContext<"/users/[id]">) {
+    const { id } = await ctx.params;
+    return Response.json({ id });
 }
 ```
 
@@ -348,10 +339,10 @@ export async function GET(_req: NextRequest, ctx: RouteContext<'/users/[id]'>) {
 
 ```tsx
 // 변경 전
-import { Button } from '../../../components/button'
+import { Button } from "../../../components/button";
 
 // 변경 후
-import { Button } from '@/components/button'
+import { Button } from "@/components/button";
 ```
 
 ---
@@ -373,10 +364,10 @@ npm run lint:fix
 
 ## 9. 주요 변경사항 요약 (Next.js 16)
 
-| 항목 | 변경 내용 |
-|------|---------|
-| 기본 번들러 | Webpack → **Turbopack** |
-| 빌드 시 린팅 | `next build` 자동 실행 → **수동 실행으로 변경** |
-| params 타입 | 직접 접근 → **`Promise<{...}>`로 `await` 필요** |
-| 타입 헬퍼 | `PageProps`, `LayoutProps`, `RouteContext` **전역 제공** |
-| AGENTS.md | `create-next-app` 기본 설정에 포함 |
+| 항목         | 변경 내용                                                |
+| ------------ | -------------------------------------------------------- |
+| 기본 번들러  | Webpack → **Turbopack**                                  |
+| 빌드 시 린팅 | `next build` 자동 실행 → **수동 실행으로 변경**          |
+| params 타입  | 직접 접근 → **`Promise<{...}>`로 `await` 필요**          |
+| 타입 헬퍼    | `PageProps`, `LayoutProps`, `RouteContext` **전역 제공** |
+| AGENTS.md    | `create-next-app` 기본 설정에 포함                       |

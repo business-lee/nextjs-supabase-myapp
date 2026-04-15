@@ -1,0 +1,20 @@
+# 빌드 산출물
+.next/
+out/
+
+# 의존성
+node_modules/
+
+# 자동 생성 파일
+next-env.d.ts
+*.tsbuildinfo
+
+# 환경 변수
+.env
+.env*.local
+
+# 패키지 잠금 파일
+package-lock.json
+
+# Shrimp 태스크 매니저 데이터
+shrimp_data/

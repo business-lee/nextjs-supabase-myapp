@@ -1,0 +1,16 @@
+# 기본: LF 사용 (크로스 플랫폼 일관성)
+* text=auto eol=lf
+
+# Husky hook 파일: 반드시 LF (CRLF 변환 시 실행 불가)
+.husky/* text eol=lf
+
+# 바이너리 파일
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
