@@ -1,0 +1,1 @@
+- [MeetUp Manager 프로젝트 핵심 정보](project_meetup_manager.md) — 비즈니스 목표, 현재 구현 현황, Phase 우선순위 근거, 주요 위험 요소

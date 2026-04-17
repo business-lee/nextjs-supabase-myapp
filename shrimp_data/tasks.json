@@ -1,0 +1,275 @@
+{
+  "tasks": [
+    {
+      "id": "80d8b6ad-4763-454b-9ace-b3200eb82f2c",
+      "name": "Task 002: TypeScript 타입 정의 및 Zod 스키마 생성",
+      "description": "MeetUp Manager 도메인 모델에 필요한 TypeScript 인터페이스와 Zod 유효성 검사 스키마를 정의합니다.\n\n구현 대상:\n1. types/ 디렉토리 신규 생성 - 도메인별 타입 파일\n2. lib/validations/ 디렉토리 신규 생성 - Zod 스키마 파일",
+      "notes": "- enum 절대 사용 금지, 리터럴 유니온 타입 사용\n- database.types.ts 직접 수정 금지 (Phase 3에서 DB 마이그레이션 후 재생성)\n- 현재 types/ 파일은 독립 인터페이스로 정의 (DB Row 타입과 별도)\n- Phase 3에서 DB 타입 생성 후 Database[\"public\"][\"Tables\"][\"meetings\"][\"Row\"] 패턴으로 통합 예정\n- 모든 id 필드는 string (UUID)\n- 날짜 필드는 string (ISO 8601)",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-04-17T09:14:29.396Z",
+      "updatedAt": "2026-04-17T09:14:29.396Z",
+      "relatedFiles": [
+        {
+          "path": "types/meeting.ts",
+          "type": "CREATE",
+          "description": "Meeting 인터페이스 및 관련 타입"
+        },
+        {
+          "path": "types/notice.ts",
+          "type": "CREATE",
+          "description": "Notice 인터페이스"
+        },
+        {
+          "path": "types/participation.ts",
+          "type": "CREATE",
+          "description": "Participation 인터페이스 및 상태 타입"
+        },
+        {
+          "path": "types/carpool.ts",
+          "type": "CREATE",
+          "description": "CarpoolDriver, CarpoolPassenger 인터페이스"
+        },
+        {
+          "path": "types/settlement.ts",
+          "type": "CREATE",
+          "description": "Settlement 관련 인터페이스"
+        },
+        {
+          "path": "types/index.ts",
+          "type": "CREATE",
+          "description": "타입 전체 re-export"
+        },
+        {
+          "path": "lib/validations/meeting.ts",
+          "type": "CREATE",
+          "description": "모임 생성/수정 Zod 스키마"
+        },
+        {
+          "path": "lib/validations/notice.ts",
+          "type": "CREATE",
+          "description": "공지사항 Zod 스키마"
+        },
+        {
+          "path": "lib/supabase/database.types.ts",
+          "type": "REFERENCE",
+          "description": "기존 DB 타입 구조 참조 (수정 금지)"
+        }
+      ],
+      "implementationGuide": "types/meeting.ts:\n- type MeetingStatus = 'active' | 'cancelled'\n- type ApprovalType = 'auto' | 'manual'\n- interface Meeting { id, host_id, title, description, date_time, location, max_participants, fee, approval_type: ApprovalType, status: MeetingStatus, invite_token, carpool_enabled, created_at, updated_at }\n\ntypes/notice.ts:\n- interface Notice { id, meeting_id, author_id, title, content, is_pinned, created_at, updated_at }\n\ntypes/participation.ts:\n- type ParticipationStatus = 'pending' | 'approved' | 'rejected' | 'waitlisted'\n- interface Participation { id, meeting_id, user_id, status: ParticipationStatus, waitlist_order, created_at, updated_at }\n\ntypes/carpool.ts:\n- type CarpoolPassengerStatus = 'pending' | 'accepted' | 'rejected'\n- interface CarpoolDriver { id, meeting_id, driver_id, departure_location, available_seats, departure_time, created_at, updated_at }\n- interface CarpoolPassenger { id, driver_id, passenger_id, status: CarpoolPassengerStatus, created_at, updated_at }\n\ntypes/settlement.ts:\n- type SettlementType = 'equal' | 'manual'\n- interface Settlement { id, meeting_id, created_by, total_amount, settlement_type: SettlementType, created_at, updated_at }\n- interface SettlementItem { id, settlement_id, description, amount }\n- interface SettlementParticipant { id, settlement_id, user_id, amount, is_paid, created_at, updated_at }\n\ntypes/index.ts:\n- 모든 타입 re-export\n\nlib/validations/meeting.ts:\n- meetingSchema = z.object({ title: z.string().min(1), description: z.string().optional(), date_time: z.string().min(1), location: z.string().min(1), max_participants: z.number().min(1).max(100), fee: z.number().min(0).optional(), approval_type: z.union([z.literal('auto'), z.literal('manual')]) })\n- type MeetingFormValues = z.infer<typeof meetingSchema>\n\nlib/validations/notice.ts:\n- noticeSchema = z.object({ title: z.string().min(1), content: z.string().min(1), is_pinned: z.boolean().default(false) })\n- type NoticeFormValues = z.infer<typeof noticeSchema>",
+      "verificationCriteria": "1. types/ 디렉토리에 5개 타입 파일 + index.ts 생성\n2. lib/validations/ 디렉토리에 meeting.ts, notice.ts 생성\n3. npm run build 타입 에러 없음\n4. 모든 타입 파일에서 enum 사용 없음\n5. 모든 id 필드 string 타입\n6. MeetingFormValues, NoticeFormValues 타입 export 확인",
+      "analysisResult": "MeetUp Manager Phase 1 목표: 전체 라우트 구조와 빈 페이지 생성, TypeScript 타입 정의. 기술 스택: Next.js App Router, React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Supabase. 코딩 규칙: 4칸 들여쓰기, any/enum 금지, 한국어 주석, 자동 커밋 금지. 인증 패턴: await createClient() + supabase.auth.getClaims() + redirect(\"/auth/login\")."
+    },
+    {
+      "id": "e92ed72e-68f1-49a8-93df-7bb0ce9dd042",
+      "name": "Task 001: 전체 라우트 구조 및 페이지 골격 생성",
+      "description": "MeetUp Manager의 전체 라우트 구조를 생성합니다. 스타터 킷 내용을 교체하고 모든 필요한 페이지 골격 파일을 생성합니다.\n\n구현 대상:\n1. lib/supabase/proxy.ts - /invite 경로 비로그인 예외 처리 추가 (루트 proxy.ts 아님)\n2. app/page.tsx - 서비스 랜딩 페이지로 교체\n3. app/protected/layout.tsx - MeetUp Manager 네비게이션 레이아웃으로 교체\n4. app/protected/page.tsx - 주최자 대시보드 골격\n5. app/protected/meetings/new/page.tsx - 모임 생성 페이지 골격\n6. app/protected/meetings/[id]/page.tsx - 모임 상세 페이지 골격 (탭 구조)\n7. app/protected/meetings/[id]/edit/page.tsx - 모임 수정 페이지 골격\n8. app/invite/[token]/page.tsx - 초대 링크 페이지 골격",
+      "notes": "- lib/supabase/proxy.ts가 수정 대상 (루트 proxy.ts는 단순 re-export 파일)\n- 스타터 킷 전용: Hero, FetchDataSteps, ConnectSupabaseSteps, SignUpUserSteps, DeployButton import 완전 제거\n- hasEnvVars 조건부 렌더링 제거\n- AuthButton은 async이므로 Suspense 래핑 필수\n- 4칸 들여쓰기, any 타입 금지, 한국어 주석",
+      "status": "in_progress",
+      "dependencies": [],
+      "createdAt": "2026-04-17T09:14:29.396Z",
+      "updatedAt": "2026-04-17T09:24:09.654Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "TO_MODIFY",
+          "description": "/invite 경로 비로그인 예외 추가",
+          "lineStart": 48,
+          "lineEnd": 53
+        },
+        {
+          "path": "app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "MeetUp Manager 랜딩 페이지"
+        },
+        {
+          "path": "app/protected/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "MeetUp Manager 레이아웃"
+        },
+        {
+          "path": "app/protected/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "주최자 대시보드 골격"
+        },
+        {
+          "path": "app/protected/meetings/new/page.tsx",
+          "type": "CREATE",
+          "description": "모임 생성 페이지 골격"
+        },
+        {
+          "path": "app/protected/meetings/[id]/page.tsx",
+          "type": "CREATE",
+          "description": "모임 상세 페이지 탭 골격"
+        },
+        {
+          "path": "app/protected/meetings/[id]/edit/page.tsx",
+          "type": "CREATE",
+          "description": "모임 수정 페이지 골격"
+        },
+        {
+          "path": "app/invite/[token]/page.tsx",
+          "type": "CREATE",
+          "description": "초대 링크 페이지 골격 (비로그인 허용)"
+        },
+        {
+          "path": "components/auth-button.tsx",
+          "type": "REFERENCE",
+          "description": "재사용 컴포넌트"
+        },
+        {
+          "path": "components/theme-switcher.tsx",
+          "type": "REFERENCE",
+          "description": "재사용 컴포넌트"
+        },
+        {
+          "path": "app/protected/profile/page.tsx",
+          "type": "REFERENCE",
+          "description": "Suspense+async 패턴 참조"
+        }
+      ],
+      "implementationGuide": "【lib/supabase/proxy.ts 수정 (48~53라인)】\n변경 전: !pathname.startsWith('/login') && !pathname.startsWith('/auth')\n변경 후: !pathname.startsWith('/auth') && !pathname.startsWith('/invite')\n(/login 조건 제거, /invite 조건 추가)\n\n【app/page.tsx】\n- 서버 컴포넌트\n- 스타터 킷 import 전부 제거 (Hero, ConnectSupabaseSteps, SignUpUserSteps, DeployButton, hasEnvVars)\n- nav: Link href='/' 'MeetUp Manager' + Suspense fallback=null > AuthButton + ThemeSwitcher\n- 메인: h1 'MeetUp Manager' + p 서비스 설명 + Button(Link /auth/login) '로그인' + Button(Link /auth/sign-up) '회원가입'\n- footer: ThemeSwitcher\n\n【app/protected/layout.tsx】\n- DeployButton, EnvVarWarning, hasEnvVars import 제거\n- nav: Link href='/' 'MeetUp Manager' + Link href='/protected/profile' '프로필' + Suspense > AuthButton\n- footer: ThemeSwitcher만\n\n【app/protected/page.tsx】\n- async DashboardContent() 함수: await createClient() → getClaims() → 미인증 redirect('/auth/login') → JSX 반환\n- export default ProtectedPage(): Suspense fallback으로 DashboardContent 감싸기\n- h1 '내 모임 목록' + Button(Link /protected/meetings/new) '+ 새 모임 만들기'\n- Card: '아직 생성한 모임이 없습니다' 빈 상태\n\n【app/protected/meetings/new/page.tsx (신규)】\n- async 서버 컴포넌트\n- await createClient() → getClaims() → 미인증 redirect\n- h1 '모임 생성'\n\n【app/protected/meetings/[id]/page.tsx (신규)】\n- type Props = { params: Promise<{id:string}>, searchParams: Promise<{tab?:string}> }\n- const {id} = await params\n- const {tab = 'notices'} = await searchParams\n- 인증 확인\n- 탭 링크 배열: [{key:'notices',label:'공지사항'},{key:'participants',label:'참여자'},{key:'carpool',label:'카풀'},{key:'settlement',label:'정산'}]\n- 각 Link: href={/protected/meetings/${id}?tab=${t.key}}, 활성 탭 스타일 구분\n- 각 탭 빈 section\n\n【app/protected/meetings/[id]/edit/page.tsx (신규)】\n- type Props = { params: Promise<{id:string}> }\n- 인증 확인\n- h1 '모임 수정'\n\n【app/invite/[token]/page.tsx (신규)】\n- type Props = { params: Promise<{token:string}> }\n- 인증 확인 코드 없음 (비로그인 허용)\n- const {token} = await params\n- h1 '모임 초대'",
+      "verificationCriteria": "1. / 페이지: MeetUp Manager 랜딩 화면, 스타터 킷 내용 없음\n2. /protected 비로그인: /auth/login 리다이렉트\n3. /invite/test: 비로그인 상태에서 리다이렉트 없이 페이지 렌더링\n4. /protected/meetings/new, /protected/meetings/123, /protected/meetings/123/edit 라우팅 정상\n5. /protected/meetings/123?tab=participants 탭 활성화 정상\n6. npm run build 타입 에러 없음\n7. npm run lint 에러 없음",
+      "analysisResult": "Task 001 최종 확정. 수정 대상은 lib/supabase/proxy.ts (루트 proxy.ts 아님). 모든 요구사항 충족. 기존 패턴 완전 재사용. 과설계 없음."
+    },
+    {
+      "id": "7c5f6d5c-b27f-47da-a543-76f297b400f5",
+      "name": "Task 001-1: proxy.ts /invite 예외 처리 및 랜딩 페이지 교체",
+      "description": "lib/supabase/proxy.ts에 /invite 비로그인 예외를 추가하고, app/page.tsx를 MeetUp Manager 서비스 랜딩 페이지로 교체합니다.",
+      "notes": "lib/supabase/proxy.ts가 수정 대상. 루트 proxy.ts는 단순 re-export이므로 수정하지 않음.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "TO_MODIFY",
+          "description": "/invite 예외 추가, /login 조건 제거",
+          "lineStart": 48,
+          "lineEnd": 53
+        },
+        {
+          "path": "app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "MeetUp Manager 랜딩 페이지"
+        },
+        {
+          "path": "components/auth-button.tsx",
+          "type": "REFERENCE",
+          "description": "재사용"
+        },
+        {
+          "path": "components/theme-switcher.tsx",
+          "type": "REFERENCE",
+          "description": "재사용"
+        }
+      ],
+      "implementationGuide": "【lib/supabase/proxy.ts 수정 (48~53라인)】\n- 기존: !pathname.startsWith('/login') && !pathname.startsWith('/auth')\n- 변경: !pathname.startsWith('/auth') && !pathname.startsWith('/invite')\n\n【app/page.tsx 교체】\n- 스타터 킷 import 전부 제거 (Hero, ConnectSupabaseSteps, SignUpUserSteps, DeployButton, hasEnvVars)\n- 서버 컴포넌트 유지\n- nav: Link href='/' 'MeetUp Manager' + Suspense > AuthButton + ThemeSwitcher\n- 메인 영역: h1 'MeetUp Manager' + 서비스 설명 p + Button(Link /auth/login) '로그인' + Button(Link /auth/sign-up) '회원가입'\n- footer: ThemeSwitcher",
+      "verificationCriteria": "1. / 페이지에 MeetUp Manager 랜딩 화면 표시\n2. /invite/test 비로그인 접근 시 리다이렉트 없음\n3. npm run lint 에러 없음",
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+    },
+    {
+      "id": "52e26be1-c119-4740-8d29-52ae4973050d",
+      "name": "Task 001-2: protected 레이아웃 및 대시보드 골격 교체",
+      "description": "app/protected/layout.tsx를 MeetUp Manager 레이아웃으로 교체하고, app/protected/page.tsx를 주최자 대시보드 골격으로 교체합니다.",
+      "notes": "- FetchDataSteps, InfoIcon import 완전 제거\n- profile/page.tsx의 Suspense+async 분리 패턴 동일 적용\n- AuthButton은 async이므로 Suspense 래핑 필수",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7c5f6d5c-b27f-47da-a543-76f297b400f5"
+        }
+      ],
+      "createdAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "relatedFiles": [
+        {
+          "path": "app/protected/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "MeetUp Manager 레이아웃"
+        },
+        {
+          "path": "app/protected/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "주최자 대시보드 골격"
+        },
+        {
+          "path": "app/protected/profile/page.tsx",
+          "type": "REFERENCE",
+          "description": "Suspense+async 패턴 참조"
+        },
+        {
+          "path": "lib/supabase/server.ts",
+          "type": "REFERENCE",
+          "description": "createClient 패턴"
+        }
+      ],
+      "implementationGuide": "【app/protected/layout.tsx 교체】\n- DeployButton, EnvVarWarning, hasEnvVars import 제거\n- nav: Link href='/' 'MeetUp Manager' + Link href='/protected/profile' '프로필' + Suspense > AuthButton\n- footer: ThemeSwitcher만 남김\n\n【app/protected/page.tsx 교체】\n- async DashboardContent(): await createClient() → getClaims() → 미인증 redirect('/auth/login') → JSX 반환\n- export default ProtectedPage(): Suspense fallback으로 DashboardContent 감싸기\n- h1 '내 모임 목록' + Button(Link /protected/meetings/new) '+ 새 모임 만들기'\n- Card: '아직 생성한 모임이 없습니다' 빈 상태 메시지",
+      "verificationCriteria": "1. /protected 비로그인 접근 시 /auth/login 리다이렉트\n2. /protected 로그인 후 '내 모임 목록' 헤더 표시\n3. 네비게이션에 'MeetUp Manager' 브랜딩 표시\n4. npm run lint 에러 없음",
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+    },
+    {
+      "id": "6a9fe362-10f9-4617-b5e9-300de80849fb",
+      "name": "Task 001-3: 모임 관련 페이지 골격 생성",
+      "description": "meetings/new, meetings/[id], meetings/[id]/edit 세 개의 페이지 골격 파일을 신규 생성합니다.",
+      "notes": "Next.js 15 async params/searchParams 패턴 필수 적용. 탭 활성화는 조건부 className으로 구분.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "52e26be1-c119-4740-8d29-52ae4973050d"
+        }
+      ],
+      "createdAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "relatedFiles": [
+        {
+          "path": "app/protected/meetings/new/page.tsx",
+          "type": "CREATE",
+          "description": "모임 생성 페이지 골격"
+        },
+        {
+          "path": "app/protected/meetings/[id]/page.tsx",
+          "type": "CREATE",
+          "description": "모임 상세 탭 페이지 골격"
+        },
+        {
+          "path": "app/protected/meetings/[id]/edit/page.tsx",
+          "type": "CREATE",
+          "description": "모임 수정 페이지 골격"
+        }
+      ],
+      "implementationGuide": "【app/protected/meetings/new/page.tsx 신규 생성】\n- async 서버 컴포넌트\n- await createClient() → getClaims() → 미인증 redirect('/auth/login')\n- h1 '모임 생성'\n\n【app/protected/meetings/[id]/page.tsx 신규 생성】\n- type Props = { params: Promise<{id:string}>, searchParams: Promise<{tab?:string}> }\n- const {id} = await params, const {tab = 'notices'} = await searchParams\n- 인증 확인\n- 탭 배열: [{key:'notices',label:'공지사항'},{key:'participants',label:'참여자'},{key:'carpool',label:'카풀'},{key:'settlement',label:'정산'}]\n- 각 Link: href={`/protected/meetings/${id}?tab=${t.key}`}, 활성 탭 스타일 구분 (tab === t.key)\n- 탭별 빈 section\n\n【app/protected/meetings/[id]/edit/page.tsx 신규 생성】\n- type Props = { params: Promise<{id:string}> }\n- 인증 확인\n- h1 '모임 수정'",
+      "verificationCriteria": "1. /protected/meetings/new 라우팅 정상\n2. /protected/meetings/123 라우팅 정상, 탭 메뉴 표시\n3. /protected/meetings/123?tab=participants 탭 활성화 정상\n4. /protected/meetings/123/edit 라우팅 정상\n5. npm run build 타입 에러 없음",
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+    },
+    {
+      "id": "58de824f-5cd2-47ad-836b-6ba32468fa38",
+      "name": "Task 001-4: 초대 링크 페이지 골격 생성",
+      "description": "app/invite/[token]/page.tsx 초대 링크 페이지를 신규 생성합니다. 비로그인 접근이 허용되어야 합니다.",
+      "notes": "이 페이지는 인증 확인 코드를 넣지 않음. proxy.ts에서 /invite 예외 처리가 이미 완료되어 있어야 함.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7c5f6d5c-b27f-47da-a543-76f297b400f5"
+        }
+      ],
+      "createdAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "relatedFiles": [
+        {
+          "path": "app/invite/[token]/page.tsx",
+          "type": "CREATE",
+          "description": "초대 링크 페이지 골격 (비로그인 허용)"
+        },
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "REFERENCE",
+          "description": "/invite 예외 처리 확인"
+        }
+      ],
+      "implementationGuide": "【app/invite/[token]/page.tsx 신규 생성】\n- async 서버 컴포넌트\n- type Props = { params: Promise<{token:string}> }\n- const {token} = await params\n- 인증 확인 코드 없음 (비로그인 허용)\n- h1 '모임 초대'\n- p token 표시 (개발용)",
+      "verificationCriteria": "1. /invite/test-token 비로그인 접근 시 리다이렉트 없이 페이지 렌더링\n2. npm run build 타입 에러 없음\n3. npm run lint 에러 없음",
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+    }
+  ]
+}

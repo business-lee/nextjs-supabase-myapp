@@ -1,0 +1,2 @@
+- [MeetUp Manager PRD 컨텍스트](project_meetup_manager.md) — 동호회 모임 관리 MVP, Host/Member 역할 분리, Supabase RLS 기반
+- [역할 기반 커뮤니티 앱 PRD 패턴](feedback_prd_pattern.md) — 여정 분리, 상태값 명시, 의사코드 흐름, RLS 원칙 기술 방식
