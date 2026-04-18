@@ -5,7 +5,7 @@
 - **앱명**: MeetUp Manager MVP
 - **목적**: 소규모 동호회 주최자(Host)가 모임 공지·참여자·카풀·정산을 관리하는 웹앱
 - **스택**: Next.js(App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, Supabase, React Hook Form, Zod
-- **역할**: Host(meetings.host_id = 현재 사용자), Member(초대 링크로 참여한 사용자)
+- **역할**: Host(meetings.host_id = 현재 사용자), Member(초대 링크로 참여한 사용자), Admin(profiles.is_admin = true 플랫폼 운영자)
 
 ---
 
@@ -25,6 +25,12 @@ app/
     profile/
       page.tsx
       actions.ts
+  admin/               # is_admin = true 계정만 접근 가능 (데스크톱 우선)
+    layout.tsx         # Admin 레이아웃 + is_admin 접근 제어
+    page.tsx           # Admin 대시보드
+    events/page.tsx    # 전체 모임 조회·수정·강제 취소/삭제
+    users/page.tsx     # 전체 사용자 목록·권한·비활성화
+    stats/page.tsx     # 기간별 통계 분석
 components/
   ui/                 # shadcn/ui 컴포넌트 (직접 수정 금지)
   *.tsx               # 재사용 컴포넌트
@@ -71,12 +77,24 @@ proxy.ts              # Next.js proxy (모든 요청에서 세션 갱신)
 ## 역할 분기 처리
 
 - Host 판별: `meeting.host_id === userId`
+- Admin 판별: `profiles.is_admin === true` (DB 조회 또는 JWT 클레임)
 - 같은 URL(`/protected/meetings/[id]`)에서 역할에 따라 UI 분기
 - 역할별 기능을 조건부 렌더링으로 구현:
     ```typescript
     {isHost && <HostOnlyComponent />}
+    {isAdmin && <AdminOnlyComponent />}
     ```
 - `/invite/[token]`은 비로그인 접근 가능. proxy.ts의 리다이렉트 로직에서 `/invite` 경로 예외 처리 필요
+- `/admin/*` 접근 시 `is_admin` 확인 후 false이면 `/protected`로 리다이렉트
+
+### 역할별 접근 범위
+
+| 경로              | 비로그인 | Member | Host | Admin |
+| ----------------- | -------- | ------ | ---- | ----- |
+| `/`               | O        | O      | O    | O     |
+| `/invite/[token]` | O        | O      | O    | O     |
+| `/protected/*`    | X        | O      | O    | O     |
+| `/admin/*`        | X        | X      | X    | O     |
 
 ---
 
@@ -116,6 +134,7 @@ proxy.ts              # Next.js proxy (모든 요청에서 세션 갱신)
 ## 새 페이지 추가 규칙
 
 - `app/protected/` 하위 페이지: 서버 컴포넌트 기본. `await createClient()`로 인증 확인
+- `app/admin/` 하위 페이지: `app/admin/layout.tsx`에서 `is_admin` 체크. Admin이 아니면 `/protected`로 리다이렉트
 - `app/invite/` 하위 페이지: 비로그인 접근 허용. proxy.ts 예외 처리 확인
 - 새 라우트 추가 시 `proxy.ts`의 matcher 패턴이 적용되는지 확인
 - 탭 구조 페이지(`/protected/meetings/[id]`): URL 쿼리 파라미터 `?tab=`으로 상태 유지
@@ -163,6 +182,9 @@ proxy.ts              # Next.js proxy (모든 요청에서 세션 갱신)
 - RLS 정책을 반드시 함께 정의. 정책 없는 테이블 생성 금지
 - `get_or_create_profile` 같은 복잡한 로직은 Supabase RPC 함수(SECURITY DEFINER)로 구현
 - 역할 판별에 `auth.uid()`를 SQL에서 직접 사용
+- **Admin RLS 정책**: `auth.jwt() ->> 'is_admin' = 'true'` 조건으로 Admin의 전체 테이블 접근 허용
+- **Admin 고권한 작업** (강제 삭제 등): Supabase Service Role 또는 Admin 전용 RLS 정책 사용
+- `profiles` 테이블: `is_admin boolean DEFAULT false` 컬럼 필수. 마이그레이션으로만 변경
 
 ---
 
@@ -170,7 +192,8 @@ proxy.ts              # Next.js proxy (모든 요청에서 세션 갱신)
 
 - 로딩 상태: `shadcn/ui`의 `Skeleton` 컴포넌트 사용
 - 에러/성공 알림: `toast` 컴포넌트 사용
-- 모바일 우선(360px 이상) 반응형 레이아웃
+- **Host/Member 페이지**: 모바일 우선(360px+) 반응형 레이아웃. `sm:` → `md:` → `lg:` 순서로 작성
+- **Admin 페이지**: 데스크톱 우선(1280px+). 사이드바 네비게이션 레이아웃. 모바일 대응 불필요
 - 스타일: Tailwind CSS 유틸리티 클래스만 사용 (인라인 style 금지)
 - 다크모드: `next-themes` + Tailwind의 `dark:` 프리픽스
 
@@ -178,12 +201,15 @@ proxy.ts              # Next.js proxy (모든 요청에서 세션 갱신)
 
 ## 파일 동시 수정 필수 규칙
 
-| 수정 파일               | 함께 수정해야 할 파일                   |
-| ----------------------- | --------------------------------------- |
-| DB 스키마 변경          | `lib/supabase/database.types.ts` 재생성 |
-| 새 Server Action 추가   | 해당 페이지 컴포넌트에서 import 연결    |
-| proxy.ts 경로 예외 추가 | `proxy.ts`의 리다이렉트 조건 확인       |
-| shadcn/ui 컴포넌트 추가 | `components/ui/` 자동 생성 확인         |
+| 수정 파일                    | 함께 수정해야 할 파일                       |
+| ---------------------------- | ------------------------------------------- |
+| DB 스키마 변경               | `lib/supabase/database.types.ts` 재생성     |
+| 새 Server Action 추가        | 해당 페이지 컴포넌트에서 import 연결        |
+| proxy.ts 경로 예외 추가      | `proxy.ts`의 리다이렉트 조건 확인           |
+| shadcn/ui 컴포넌트 추가      | `components/ui/` 자동 생성 확인             |
+| `docs/PRD.md` 기능 추가/변경 | `docs/ROADMAP.md` 업데이트                  |
+| 새 라우트 추가               | `docs/ROADMAP.md` 라우트 구조 섹션          |
+| Admin 기능 추가              | `app/admin/layout.tsx`의 is_admin 체크 확인 |
 
 ---
 

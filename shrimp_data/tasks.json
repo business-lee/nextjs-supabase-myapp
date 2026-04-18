@@ -137,10 +137,10 @@
       "name": "Task 001-1: proxy.ts /invite 예외 처리 및 랜딩 페이지 교체",
       "description": "lib/supabase/proxy.ts에 /invite 비로그인 예외를 추가하고, app/page.tsx를 MeetUp Manager 서비스 랜딩 페이지로 교체합니다.",
       "notes": "lib/supabase/proxy.ts가 수정 대상. 루트 proxy.ts는 단순 re-export이므로 수정하지 않음.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [],
       "createdAt": "2026-04-17T09:27:57.126Z",
-      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:42:09.043Z",
       "relatedFiles": [
         {
           "path": "lib/supabase/proxy.ts",
@@ -167,21 +167,23 @@
       ],
       "implementationGuide": "【lib/supabase/proxy.ts 수정 (48~53라인)】\n- 기존: !pathname.startsWith('/login') && !pathname.startsWith('/auth')\n- 변경: !pathname.startsWith('/auth') && !pathname.startsWith('/invite')\n\n【app/page.tsx 교체】\n- 스타터 킷 import 전부 제거 (Hero, ConnectSupabaseSteps, SignUpUserSteps, DeployButton, hasEnvVars)\n- 서버 컴포넌트 유지\n- nav: Link href='/' 'MeetUp Manager' + Suspense > AuthButton + ThemeSwitcher\n- 메인 영역: h1 'MeetUp Manager' + 서비스 설명 p + Button(Link /auth/login) '로그인' + Button(Link /auth/sign-up) '회원가입'\n- footer: ThemeSwitcher",
       "verificationCriteria": "1. / 페이지에 MeetUp Manager 랜딩 화면 표시\n2. /invite/test 비로그인 접근 시 리다이렉트 없음\n3. npm run lint 에러 없음",
-      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리.",
+      "summary": "lib/supabase/proxy.ts의 /login 조건 제거 및 /invite 예외 추가 완료. app/page.tsx를 MeetUp Manager 랜딩 페이지로 교체 (스타터 킷 컴포넌트 전부 제거, AuthButton/ThemeSwitcher 재사용, 로그인/회원가입 CTA 버튼 구현). npm run lint 에러 없음.",
+      "completedAt": "2026-04-17T09:42:09.036Z"
     },
     {
       "id": "52e26be1-c119-4740-8d29-52ae4973050d",
       "name": "Task 001-2: protected 레이아웃 및 대시보드 골격 교체",
       "description": "app/protected/layout.tsx를 MeetUp Manager 레이아웃으로 교체하고, app/protected/page.tsx를 주최자 대시보드 골격으로 교체합니다.",
       "notes": "- FetchDataSteps, InfoIcon import 완전 제거\n- profile/page.tsx의 Suspense+async 분리 패턴 동일 적용\n- AuthButton은 async이므로 Suspense 래핑 필수",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "7c5f6d5c-b27f-47da-a543-76f297b400f5"
         }
       ],
       "createdAt": "2026-04-17T09:27:57.126Z",
-      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:42:46.287Z",
       "relatedFiles": [
         {
           "path": "app/protected/layout.tsx",
@@ -206,21 +208,23 @@
       ],
       "implementationGuide": "【app/protected/layout.tsx 교체】\n- DeployButton, EnvVarWarning, hasEnvVars import 제거\n- nav: Link href='/' 'MeetUp Manager' + Link href='/protected/profile' '프로필' + Suspense > AuthButton\n- footer: ThemeSwitcher만 남김\n\n【app/protected/page.tsx 교체】\n- async DashboardContent(): await createClient() → getClaims() → 미인증 redirect('/auth/login') → JSX 반환\n- export default ProtectedPage(): Suspense fallback으로 DashboardContent 감싸기\n- h1 '내 모임 목록' + Button(Link /protected/meetings/new) '+ 새 모임 만들기'\n- Card: '아직 생성한 모임이 없습니다' 빈 상태 메시지",
       "verificationCriteria": "1. /protected 비로그인 접근 시 /auth/login 리다이렉트\n2. /protected 로그인 후 '내 모임 목록' 헤더 표시\n3. 네비게이션에 'MeetUp Manager' 브랜딩 표시\n4. npm run lint 에러 없음",
-      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리.",
+      "summary": "app/protected/layout.tsx를 MeetUp Manager 레이아웃으로 교체 (DeployButton/EnvVarWarning/hasEnvVars 제거, MeetUp Manager 브랜딩, 프로필 링크, AuthButton Suspense 래핑). app/protected/page.tsx를 주최자 대시보드 골격으로 교체 (Suspense+async DashboardContent 분리 패턴, 인증 확인, 빈 상태 Card UI). npm run lint 에러 없음.",
+      "completedAt": "2026-04-17T09:42:46.284Z"
     },
     {
       "id": "6a9fe362-10f9-4617-b5e9-300de80849fb",
       "name": "Task 001-3: 모임 관련 페이지 골격 생성",
       "description": "meetings/new, meetings/[id], meetings/[id]/edit 세 개의 페이지 골격 파일을 신규 생성합니다.",
       "notes": "Next.js 15 async params/searchParams 패턴 필수 적용. 탭 활성화는 조건부 className으로 구분.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "52e26be1-c119-4740-8d29-52ae4973050d"
         }
       ],
       "createdAt": "2026-04-17T09:27:57.126Z",
-      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:45:21.627Z",
       "relatedFiles": [
         {
           "path": "app/protected/meetings/new/page.tsx",
@@ -240,21 +244,23 @@
       ],
       "implementationGuide": "【app/protected/meetings/new/page.tsx 신규 생성】\n- async 서버 컴포넌트\n- await createClient() → getClaims() → 미인증 redirect('/auth/login')\n- h1 '모임 생성'\n\n【app/protected/meetings/[id]/page.tsx 신규 생성】\n- type Props = { params: Promise<{id:string}>, searchParams: Promise<{tab?:string}> }\n- const {id} = await params, const {tab = 'notices'} = await searchParams\n- 인증 확인\n- 탭 배열: [{key:'notices',label:'공지사항'},{key:'participants',label:'참여자'},{key:'carpool',label:'카풀'},{key:'settlement',label:'정산'}]\n- 각 Link: href={`/protected/meetings/${id}?tab=${t.key}`}, 활성 탭 스타일 구분 (tab === t.key)\n- 탭별 빈 section\n\n【app/protected/meetings/[id]/edit/page.tsx 신규 생성】\n- type Props = { params: Promise<{id:string}> }\n- 인증 확인\n- h1 '모임 수정'",
       "verificationCriteria": "1. /protected/meetings/new 라우팅 정상\n2. /protected/meetings/123 라우팅 정상, 탭 메뉴 표시\n3. /protected/meetings/123?tab=participants 탭 활성화 정상\n4. /protected/meetings/123/edit 라우팅 정상\n5. npm run build 타입 에러 없음",
-      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리.",
+      "summary": "meetings/new, meetings/[id], meetings/[id]/edit 페이지 골격 생성 완료. Next.js 15 async params/searchParams 패턴 적용. Suspense+async 내부 컴포넌트 패턴으로 빌드 오류 해결. 탭 네비게이션 URL 기반 활성화 구현. npm run build 성공.",
+      "completedAt": "2026-04-17T09:45:21.625Z"
     },
     {
       "id": "58de824f-5cd2-47ad-836b-6ba32468fa38",
       "name": "Task 001-4: 초대 링크 페이지 골격 생성",
       "description": "app/invite/[token]/page.tsx 초대 링크 페이지를 신규 생성합니다. 비로그인 접근이 허용되어야 합니다.",
       "notes": "이 페이지는 인증 확인 코드를 넣지 않음. proxy.ts에서 /invite 예외 처리가 이미 완료되어 있어야 함.",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "7c5f6d5c-b27f-47da-a543-76f297b400f5"
         }
       ],
       "createdAt": "2026-04-17T09:27:57.126Z",
-      "updatedAt": "2026-04-17T09:27:57.126Z",
+      "updatedAt": "2026-04-17T09:45:24.325Z",
       "relatedFiles": [
         {
           "path": "app/invite/[token]/page.tsx",
@@ -269,7 +275,9 @@
       ],
       "implementationGuide": "【app/invite/[token]/page.tsx 신규 생성】\n- async 서버 컴포넌트\n- type Props = { params: Promise<{token:string}> }\n- const {token} = await params\n- 인증 확인 코드 없음 (비로그인 허용)\n- h1 '모임 초대'\n- p token 표시 (개발용)",
       "verificationCriteria": "1. /invite/test-token 비로그인 접근 시 리다이렉트 없이 페이지 렌더링\n2. npm run build 타입 에러 없음\n3. npm run lint 에러 없음",
-      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리."
+      "analysisResult": "Task 001을 하위 작업으로 분할. 각 파일 그룹별로 독립적으로 구현 및 검증 가능하도록 분리.",
+      "summary": "app/invite/[token]/page.tsx 신규 생성 완료. 인증 확인 코드 없음 (비로그인 허용). Suspense+async InviteContent 패턴으로 빌드 오류 해결. proxy.ts /invite 예외 처리와 연동하여 비로그인 접근 허용. npm run build 성공.",
+      "completedAt": "2026-04-17T09:45:24.322Z"
     }
   ]
 }

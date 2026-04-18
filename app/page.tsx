@@ -1,11 +1,6 @@
-import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -15,41 +10,37 @@ export default function Home() {
             <div className="flex w-full flex-1 flex-col items-center gap-20">
                 <nav className="border-b-foreground/10 flex h-16 w-full justify-center border-b">
                     <div className="flex w-full max-w-5xl items-center justify-between p-3 px-5 text-sm">
-                        <div className="flex items-center gap-5 font-semibold">
-                            <Link href={"/"}>Next.js Supabase Starter</Link>
-                            <div className="flex items-center gap-2">
-                                <DeployButton />
-                            </div>
-                        </div>
-                        {!hasEnvVars ? (
-                            <EnvVarWarning />
-                        ) : (
+                        <Link href="/" className="font-semibold">
+                            MeetUp Manager
+                        </Link>
+                        <div className="flex items-center gap-4">
                             <Suspense>
                                 <AuthButton />
                             </Suspense>
-                        )}
+                            <ThemeSwitcher />
+                        </div>
                     </div>
                 </nav>
-                <div className="flex max-w-5xl flex-1 flex-col gap-20 p-5">
-                    <Hero />
-                    <main className="flex flex-1 flex-col gap-6 px-4">
-                        <h2 className="mb-4 text-xl font-medium">Next steps</h2>
-                        {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-                    </main>
+
+                <div className="flex max-w-5xl flex-1 flex-col items-center gap-12 p-5">
+                    <div className="flex flex-col items-center gap-6 text-center">
+                        <h1 className="text-4xl font-bold">MeetUp Manager</h1>
+                        <p className="text-muted-foreground max-w-xl text-lg">
+                            소규모 동호회 모임을 쉽게 관리하세요. 모임 공지, 참여자 관리, 카풀 조율,
+                            정산까지 한 곳에서.
+                        </p>
+                        <div className="flex gap-4">
+                            <Button asChild size="lg">
+                                <Link href="/auth/login">로그인</Link>
+                            </Button>
+                            <Button asChild size="lg" variant="outline">
+                                <Link href="/auth/sign-up">회원가입</Link>
+                            </Button>
+                        </div>
+                    </div>
                 </div>
 
-                <footer className="mx-auto flex w-full items-center justify-center gap-8 border-t py-16 text-center text-xs">
-                    <p>
-                        Powered by{" "}
-                        <a
-                            href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-                            target="_blank"
-                            className="font-bold hover:underline"
-                            rel="noreferrer"
-                        >
-                            Supabase
-                        </a>
-                    </p>
+                <footer className="mx-auto flex w-full items-center justify-center border-t py-8 text-center text-xs">
                     <ThemeSwitcher />
                 </footer>
             </div>
