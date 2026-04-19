@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { type Database } from "@/lib/supabase/database.types";
+import { getMockUserMeetingStats } from "@/lib/mock-data";
 
 // 프로필 타입 별칭
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
@@ -36,8 +37,19 @@ export async function getProfile(): Promise<ProfileRow> {
 /**
  * 현재 로그인한 사용자의 프로필을 수정합니다.
  */
+export async function getMeetingStats(): Promise<{ created: number; joined: number }> {
+    const supabase = await createClient();
+    const { data: claimsData, error } = await supabase.auth.getClaims();
+
+    if (error || !claimsData?.claims) {
+        redirect("/auth/login");
+    }
+
+    return getMockUserMeetingStats(claimsData.claims.sub);
+}
+
 export async function updateProfile(
-    updates: Pick<ProfileUpdate, "full_name" | "bio" | "website">,
+    updates: Pick<ProfileUpdate, "full_name">,
 ): Promise<{ success: boolean; message: string }> {
     const supabase = await createClient();
     const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();

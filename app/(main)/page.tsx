@@ -1,49 +1,65 @@
-import { AuthButton } from "@/components/auth-button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Suspense } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
+
+async function LoginLink() {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getClaims();
+    const isLoggedIn = !!data?.claims;
+
+    if (isLoggedIn) return null;
+
+    return (
+        <p className="text-muted-foreground text-center text-sm">
+            이미 계정이 있으신가요?{" "}
+            <Link href="/auth/login" className="text-foreground underline underline-offset-4">
+                로그인
+            </Link>
+        </p>
+    );
+}
 
 export default function Home() {
     return (
-        <main className="flex min-h-screen flex-col items-center">
-            <div className="flex w-full flex-1 flex-col items-center gap-20">
-                <nav className="border-b-foreground/10 flex h-16 w-full justify-center border-b">
-                    <div className="flex w-full items-center justify-between p-3 px-5 text-sm">
-                        <Link href="/" className="font-semibold">
-                            MeetUp Manager
-                        </Link>
-                        <div className="flex items-center gap-4">
-                            <Suspense>
-                                <AuthButton />
-                            </Suspense>
-                            <ThemeSwitcher />
-                        </div>
-                    </div>
-                </nav>
+        <main className="flex min-h-screen flex-col">
+            {/* 배너 이미지 */}
+            <div className="relative h-[55vh] w-full overflow-hidden">
+                <Image
+                    src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=530&q=80&fit=crop"
+                    alt="모임 배너"
+                    fill
+                    className="object-cover"
+                    priority
+                    unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            </div>
 
-                <div className="flex w-full flex-1 flex-col items-center gap-12 p-5">
-                    <div className="flex flex-col items-center gap-6 text-center">
-                        <h1 className="text-4xl font-bold">MeetUp Manager</h1>
-                        <p className="text-muted-foreground max-w-xl text-lg">
-                            소규모 동호회 모임을 쉽게 관리하세요. 모임 공지, 참여자 관리, 카풀 조율,
-                            정산까지 한 곳에서.
-                        </p>
-                        <div className="flex gap-4">
-                            <Button asChild size="lg">
-                                <Link href="/auth/login">로그인</Link>
-                            </Button>
-                            <Button asChild size="lg" variant="outline">
-                                <Link href="/auth/sign-up">회원가입</Link>
-                            </Button>
-                        </div>
-                    </div>
+            {/* 소개 및 CTA */}
+            <section className="flex flex-1 flex-col gap-6 px-6 py-8">
+                <div className="flex flex-col gap-3">
+                    <h1 className="text-3xl leading-tight font-bold">
+                        소규모 모임을
+                        <br />더 쉽게 관리하세요
+                    </h1>
+                    <p className="text-muted-foreground text-base leading-relaxed">
+                        공지, 참여자 관리, 카풀 조율, 정산까지
+                        <br />
+                        모임의 모든 것을 한 곳에서.
+                    </p>
                 </div>
 
-                <footer className="mx-auto flex w-full items-center justify-center border-t py-8 text-center text-xs">
-                    <ThemeSwitcher />
-                </footer>
-            </div>
+                <div className="flex flex-col gap-3 pb-4">
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/auth/login?redirect=/protected/meetings/new">모임 만들기</Link>
+                    </Button>
+                    <Suspense>
+                        <LoginLink />
+                    </Suspense>
+                </div>
+            </section>
         </main>
     );
 }

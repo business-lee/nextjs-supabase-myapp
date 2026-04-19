@@ -15,23 +15,13 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { updateProfile } from "@/app/(main)/protected/profile/actions";
 import { type Database } from "@/lib/supabase/database.types";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
-// 프로필 수정 폼 유효성 스키마
 const profileFormSchema = z.object({
     full_name: z.string().max(50, "이름은 50자를 초과할 수 없습니다.").optional(),
-    bio: z.string().max(200, "소개는 200자를 초과할 수 없습니다.").optional(),
-    website: z
-        .string()
-        .optional()
-        .refine(
-            (val) => !val || val === "" || /^https?:\/\/.+/.test(val),
-            "유효한 URL을 입력해주세요. (예: https://example.com)",
-        ),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -50,8 +40,6 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
             full_name: profile.full_name ?? "",
-            bio: profile.bio ?? "",
-            website: profile.website ?? "",
         },
     });
 
@@ -62,8 +50,6 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         try {
             const result = await updateProfile({
                 full_name: values.full_name || null,
-                bio: values.bio || null,
-                website: values.website || null,
             });
 
             setMessage({
@@ -96,47 +82,6 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                             <FormLabel>이름</FormLabel>
                             <FormControl>
                                 <Input placeholder="홍길동" {...field} value={field.value ?? ""} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* 소개 */}
-                <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>소개</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="자신을 소개해주세요."
-                                    className="resize-none"
-                                    rows={4}
-                                    {...field}
-                                    value={field.value ?? ""}
-                                />
-                            </FormControl>
-                            <FormDescription>최대 200자</FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* 웹사이트 */}
-                <FormField
-                    control={form.control}
-                    name="website"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>웹사이트</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="https://example.com"
-                                    {...field}
-                                    value={field.value ?? ""}
-                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

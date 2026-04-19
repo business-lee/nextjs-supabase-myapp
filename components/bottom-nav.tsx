@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, CalendarPlus, Home, Settings, User } from "lucide-react";
+import { CalendarPlus, Home, LayoutList, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-    { label: "홈", href: "/protected", icon: Home },
-    { label: "모임", href: "/protected/meetings/new", icon: CalendarPlus },
-    { label: "알림", href: "/protected", icon: Bell },
+const NAV_ITEMS = [
+    { label: "홈", href: "/", icon: Home },
+    { label: "모임", href: "/protected/meetings", icon: LayoutList },
+    { label: "새 모임", href: "/protected/meetings/new", icon: CalendarPlus },
     { label: "프로필", href: "/protected/profile", icon: User },
-    { label: "설정", href: "/protected", icon: Settings },
 ];
 
 export function BottomNav() {
@@ -19,8 +18,11 @@ export function BottomNav() {
     return (
         <nav className="bg-background fixed bottom-0 left-1/2 w-full max-w-[530px] -translate-x-1/2 border-t">
             <ul className="flex h-16 items-center justify-around px-2">
-                {navItems.map(({ label, href, icon: Icon }) => {
-                    const isActive = pathname === href;
+                {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+                    const isActive =
+                        href === "/"
+                            ? pathname === "/"
+                            : pathname === href || pathname.startsWith(href + "/");
                     return (
                         <li key={label} className="flex-1">
                             <Link

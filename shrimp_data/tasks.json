@@ -447,6 +447,221 @@
       "analysisResult": "MeetUp Manager TypeScript 타입 정의 및 Zod v4 스키마 생성. DB 스키마 8개 테이블 기반 타입과 폼 유효성 검사 스키마를 7개 신규 파일로 구현. as const 상수 + union type 패턴 사용(enum 금지). Zod v4 API 사용, 한국어 에러 메시지 적용.",
       "summary": "카풀 및 정산 Zod 스키마 정의 완료. carpoolDriverSchema에 available_seats 1~8 범위 검증(z.coerce.number()), carpoolPassengerSchema에 UUID 형식 검증 적용. settlementSchema에 중첩 items 배열(min 1) 검증 구현. settlementParticipantUpdateSchema로 납부 여부 업데이트 스키마 분리. 모든 에러 메시지 한국어 작성. z.infer 타입 추출(CarpoolDriverFormValues, CarpoolPassengerFormValues, SettlementFormValues, SettlementItemFormValues, SettlementParticipantUpdateValues). tsc --noEmit 오류 없음.",
       "completedAt": "2026-04-18T09:14:01.203Z"
+    },
+    {
+      "id": "0d6b8742-faff-431f-8cb2-948a54449239",
+      "name": "Task 003: 공통 컴포넌트 및 레이아웃 구현",
+      "description": "Phase 2 전체에서 공유되는 공통 컴포넌트를 구현합니다. shadcn/ui 추가 컴포넌트 설치, protected 레이아웃 정리, 더미 데이터 생성, MeetingCard 컴포넌트, BottomNav 고도화가 포함됩니다.",
+      "notes": "protected/layout.tsx 교체가 핵심 - 현재 이중 레이아웃 문제 존재. mock-data.ts는 Task 004/005/006에서 모두 import하므로 완성도 높게 작성",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-04-19T06:04:34.764Z",
+      "updatedAt": "2026-04-19T06:09:08.166Z",
+      "relatedFiles": [
+        {
+          "path": "app/(main)/protected/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "스타터 킷 nav/footer 제거, 단순 래퍼로 교체"
+        },
+        {
+          "path": "app/(main)/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "서버에서 사용자 정보 조회 후 BottomNav에 전달"
+        },
+        {
+          "path": "components/bottom-nav.tsx",
+          "type": "TO_MODIFY",
+          "description": "Avatar 표시 및 로그아웃 연동"
+        },
+        {
+          "path": "lib/mock-data.ts",
+          "type": "CREATE",
+          "description": "더미 데이터 유틸리티"
+        },
+        {
+          "path": "components/meeting-card.tsx",
+          "type": "CREATE",
+          "description": "모임 카드 컴포넌트"
+        },
+        {
+          "path": "types/domain.ts",
+          "type": "REFERENCE",
+          "description": "MeetingCardData, MeetingWithHost 등 타입 참조"
+        },
+        {
+          "path": "types/database.ts",
+          "type": "REFERENCE",
+          "description": "NoticeRow, ParticipationRow 등 타입 참조"
+        }
+      ],
+      "implementationGuide": "1. shadcn/ui 추가 컴포넌트 설치: npx shadcn@latest add dialog skeleton sonner avatar select separator\n2. app/(main)/protected/layout.tsx 교체: 현재 스타터 킷 상단 nav+footer 제거, 단순 children 래퍼로 변경 (이미 app/(main)/layout.tsx에 BottomNav 포함됨)\n3. lib/mock-data.ts 생성: MeetingWithHost 타입 5개 더미 모임, NoticeRow 더미 공지, ParticipationWithUser 더미 참가자, CarpoolDriverWithPassengers 더미 카풀, SettlementRow+items+participants 더미 정산 데이터\n4. components/meeting-card.tsx 생성: MeetingCardData props 타입(types/domain.ts 참조), D-day 계산 유틸 함수, shadcn/ui Card+Badge 활용, 클릭 시 /protected/meetings/[id] 이동\n5. components/bottom-nav.tsx 고도화: UserProfile props 추가(nullable), Avatar 컴포넌트 표시, 로그아웃 버튼 추가. app/(main)/layout.tsx에서 서버 컴포넌트로 사용자 정보 조회 후 props 전달",
+      "verificationCriteria": "1. /protected 접속 시 상단 nav와 footer가 사라지고 하단 BottomNav만 표시됨\n2. MeetingCard 컴포넌트가 D-day, 인원 현황 배지 정상 표시\n3. BottomNav에 Avatar 표시 (로그인 시)\n4. mock-data.ts import 오류 없음\n5. TypeScript 타입 오류 없음",
+      "analysisResult": "Phase 2 목표: 실제 API 연동 없이 더미 데이터로 전체 앱 화면 완성. Task 003 완료 후 Task 004/005/006 병렬 진행 가능. 기술 스택: Next.js 15 App Router, TypeScript, Tailwind CSS v4, shadcn/ui (new-york), React Hook Form + Zod. 모든 타입은 types/database.ts, types/domain.ts 활용. any 타입 금지, enum 금지(as const + union type 사용), 들여쓰기 4칸, 주석 한국어.",
+      "summary": "Task 003 완료: shadcn/ui 6개 컴포넌트(dialog/skeleton/sonner/avatar/select/separator) 설치, protected/layout.tsx 단순 래퍼로 교체(이중 레이아웃 문제 해결), lib/mock-data.ts 생성(5개 더미 모임/공지/참가자/카풀/정산 데이터 및 헬퍼 함수), components/meeting-card.tsx 생성(D-day 뱃지/인원 현황 표시), BottomNav 고도화(Avatar/로그아웃 버튼), app/(main)/layout.tsx에서 서버 컴포넌트로 프로필 조회 후 BottomNav에 props 전달. TypeScript 타입 오류 없음.",
+      "completedAt": "2026-04-19T06:09:08.163Z"
+    },
+    {
+      "id": "5e3ea7da-5e97-41f6-a3a3-17c37c72695d",
+      "name": "Task 004: 주최자 대시보드 및 모임 생성/수정 UI 구현",
+      "description": "주최자 대시보드(/protected)에 MeetingCard 목록을 렌더링하고, 모임 생성(/protected/meetings/new)과 수정(/protected/meetings/[id]/edit) 폼 UI를 구현합니다. 모임 취소 Dialog도 포함됩니다.",
+      "notes": "MeetingForm은 생성/수정 모두에서 재사용. isEditMode와 defaultValues prop으로 동작 구분. 실제 제출은 Phase 3에서 구현하므로 더미 처리",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "0d6b8742-faff-431f-8cb2-948a54449239"
+        }
+      ],
+      "createdAt": "2026-04-19T06:04:34.764Z",
+      "updatedAt": "2026-04-19T06:17:07.196Z",
+      "relatedFiles": [
+        {
+          "path": "app/(main)/protected/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "더미 모임 목록 렌더링"
+        },
+        {
+          "path": "app/(main)/protected/meetings/new/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "MeetingForm 렌더링"
+        },
+        {
+          "path": "app/(main)/protected/meetings/[id]/edit/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "수정 폼 렌더링"
+        },
+        {
+          "path": "components/meeting-form.tsx",
+          "type": "CREATE",
+          "description": "모임 생성/수정 폼 컴포넌트"
+        },
+        {
+          "path": "components/meeting-cancel-dialog.tsx",
+          "type": "CREATE",
+          "description": "모임 취소 확인 Dialog"
+        },
+        {
+          "path": "lib/validations/meeting.ts",
+          "type": "REFERENCE",
+          "description": "meetingSchema, MeetingFormValues 참조"
+        },
+        {
+          "path": "lib/mock-data.ts",
+          "type": "DEPENDENCY",
+          "description": "더미 모임 데이터"
+        },
+        {
+          "path": "components/meeting-card.tsx",
+          "type": "DEPENDENCY",
+          "description": "MeetingCard 컴포넌트"
+        }
+      ],
+      "implementationGuide": "1. app/(main)/protected/page.tsx 수정: mock-data.ts의 더미 모임 목록 import, MeetingCard 컴포넌트로 렌더링, 최신순(created_at) 정렬, 빈 상태 UI 유지\n2. components/meeting-form.tsx 생성 (use client): React Hook Form + meetingSchema(lib/validations/meeting.ts), 필드: title/event_at(datetime-local)/location/max_participants/entry_fee/description/approval_type(select), 제출 시 더미 처리(sonner toast), isEditMode prop으로 생성/수정 구분\n3. app/(main)/protected/meetings/new/page.tsx 수정: MeetingForm 렌더링, 페이지 헤더 추가\n4. app/(main)/protected/meetings/[id]/edit/page.tsx 수정: 더미 모임 데이터를 defaultValues로 MeetingForm에 전달\n5. components/meeting-cancel-dialog.tsx 생성: shadcn/ui Dialog 활용, 취소 확인/철회 버튼, onConfirm 콜백 prop",
+      "verificationCriteria": "1. /protected에서 더미 모임 카드 목록 최신순 표시\n2. /protected/meetings/new에서 모임 생성 폼 7개 필드 모두 표시\n3. Zod 유효성 검사 동작 (빈 제목 제출 시 에러 메시지)\n4. /protected/meetings/[id]/edit에서 더미 데이터가 폼에 채워짐\n5. 모임 취소 Dialog 열기/닫기 동작\n6. TypeScript 타입 오류 없음",
+      "analysisResult": "Phase 2 목표: 실제 API 연동 없이 더미 데이터로 전체 앱 화면 완성. Task 003 완료 후 Task 004/005/006 병렬 진행 가능. 기술 스택: Next.js 15 App Router, TypeScript, Tailwind CSS v4, shadcn/ui (new-york), React Hook Form + Zod. 모든 타입은 types/database.ts, types/domain.ts 활용. any 타입 금지, enum 금지(as const + union type 사용), 들여쓰기 4칸, 주석 한국어.",
+      "summary": "Task 004 완료: protected/page.tsx에 더미 모임 카드 목록(최신순) 렌더링, components/meeting-form.tsx 생성(React Hook Form + Zod, 7개 필드, z.coerce 타입 이슈 Resolver 캐스팅으로 해결), new/page.tsx와 [id]/edit/page.tsx에 MeetingForm 연동(수정 시 defaultValues 주입), components/meeting-cancel-dialog.tsx 생성(확인/철회 버튼 Dialog). TypeScript 오류 없음.",
+      "completedAt": "2026-04-19T06:17:07.193Z"
+    },
+    {
+      "id": "1626c75d-6184-4e6b-a592-ab5e9e5864be",
+      "name": "Task 005: 모임 상세 페이지 탭별 UI 구현",
+      "description": "모임 상세 페이지(/protected/meetings/[id])의 헤더 UI와 4개 탭(공지사항/참여자/카풀/정산) 콘텐츠를 더미 데이터로 구현합니다.",
+      "notes": "URL 쿼리 파라미터 기반 탭 방식 유지 (shadcn/ui Tabs 미사용). isHost prop을 각 탭 컴포넌트에 전달하여 주최자/참여자 뷰 구분. 초대 링크 복사 버튼은 navigator.clipboard.writeText 활용",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "0d6b8742-faff-431f-8cb2-948a54449239"
+        }
+      ],
+      "createdAt": "2026-04-19T06:04:34.764Z",
+      "updatedAt": "2026-04-19T06:17:13.565Z",
+      "relatedFiles": [
+        {
+          "path": "app/(main)/protected/meetings/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "모임 헤더 + 탭 네비게이션"
+        },
+        {
+          "path": "components/meeting-tabs/notices-tab.tsx",
+          "type": "CREATE",
+          "description": "공지사항 탭"
+        },
+        {
+          "path": "components/meeting-tabs/participants-tab.tsx",
+          "type": "CREATE",
+          "description": "참여자 탭"
+        },
+        {
+          "path": "components/meeting-tabs/carpool-tab.tsx",
+          "type": "CREATE",
+          "description": "카풀 탭"
+        },
+        {
+          "path": "components/meeting-tabs/settlement-tab.tsx",
+          "type": "CREATE",
+          "description": "정산 탭"
+        },
+        {
+          "path": "lib/mock-data.ts",
+          "type": "DEPENDENCY",
+          "description": "더미 데이터"
+        },
+        {
+          "path": "types/domain.ts",
+          "type": "REFERENCE",
+          "description": "타입 참조"
+        },
+        {
+          "path": "components/meeting-cancel-dialog.tsx",
+          "type": "DEPENDENCY",
+          "description": "모임 취소 Dialog"
+        }
+      ],
+      "implementationGuide": "1. app/(main)/protected/meetings/[id]/page.tsx 수정:\n   - 모임 헤더: title/event_at/location/entry_fee/status 배지, 초대 링크 복사 버튼(navigator.clipboard), 주최자 전용 수정/취소 버튼\n   - isHost 더미 플래그 (true로 하드코딩)\n   - 탭 네비게이션: 기존 Link 기반 방식 유지 (URL 쿼리 파라미터 기반), 활성 탭 스타일\n   - 탭 콘텐츠 컴포넌트 조건부 렌더링\n2. components/meeting-tabs/notices-tab.tsx 생성 (use client):\n   - 더미 공지 목록 (고정 공지 최상단), 고정 배지\n   - 주최자 전용 공지 작성 버튼 + Dialog (제목/내용 입력, 고정 여부 체크박스)\n   - 각 공지 수정/삭제 버튼 (더미 처리)\n3. components/meeting-tabs/participants-tab.tsx 생성:\n   - 참여 통계 배지 (승인N/대기N/거절N)\n   - 주최자 뷰: 신청자 목록 카드, 상태별 배지, 승인/거절 버튼 (더미)\n   - 참여자 뷰: 본인 상태 표시 (더미: approved)\n4. components/meeting-tabs/carpool-tab.tsx 생성 (use client):\n   - 카풀 활성화 토글 Switch (주최자 전용)\n   - 드라이버 등록 폼 Dialog (출발지/좌석수/출발시간)\n   - 드라이버 카드 목록: 드라이버 정보 + 동승자 목록\n   - 동승 신청 버튼, 수락/거절 버튼 (더미)\n5. components/meeting-tabs/settlement-tab.tsx 생성 (use client):\n   - 비용 항목 추가 폼 (항목명/금액)\n   - 정산 방식 선택 RadioGroup (1/N / 수동)\n   - 납부 현황 테이블: 이름/금액/납부여부 체크박스",
+      "verificationCriteria": "1. 모임 헤더에 제목/날짜/장소/참가비/상태 배지 표시\n2. 초대 링크 복사 버튼 동작 (클립보드 복사)\n3. 4개 탭 전환 시 URL ?tab= 파라미터 변경 및 콘텐츠 전환\n4. 공지사항 탭: 고정 공지 최상단, 작성 Dialog 열기 동작\n5. 참여자 탭: 통계 배지, 승인/거절 버튼 표시\n6. 카풀 탭: 활성화 토글, 드라이버 목록, 동승 신청 버튼\n7. 정산 탭: 비용 항목 폼, 방식 선택, 납부 현황 테이블\n8. TypeScript 타입 오류 없음",
+      "analysisResult": "Phase 2 목표: 실제 API 연동 없이 더미 데이터로 전체 앱 화면 완성. Task 003 완료 후 Task 004/005/006 병렬 진행 가능. 기술 스택: Next.js 15 App Router, TypeScript, Tailwind CSS v4, shadcn/ui (new-york), React Hook Form + Zod. 모든 타입은 types/database.ts, types/domain.ts 활용. any 타입 금지, enum 금지(as const + union type 사용), 들여쓰기 4칸, 주석 한국어.",
+      "summary": "Task 005 완료: meetings/[id]/page.tsx를 클라이언트 컴포넌트로 전환하여 모임 헤더(제목/날짜/장소/참가비/상태배지), 초대 링크 복사 버튼(navigator.clipboard), 주최자 수정/취소 버튼 구현. URL 쿼리 파라미터 기반 탭 네비게이션 유지. notices-tab(고정공지 정렬+CRUD Dialog), participants-tab(통계배지+승인거절), carpool-tab(Switch토글+드라이버 등록 Dialog+동승 관리), settlement-tab(비용항목+RadioGroup정산방식+납부현황) 4개 탭 컴포넌트 생성. TypeScript 오류 없음.",
+      "completedAt": "2026-04-19T06:17:13.562Z"
+    },
+    {
+      "id": "794a790c-769e-41fe-b4a1-9b755e98b4d5",
+      "name": "Task 006: 초대 링크 페이지 UI 구현",
+      "description": "초대 링크 페이지(/invite/[token])를 비로그인/로그인 상태별로 구현하고 Skeleton 로딩 UI를 추가합니다.",
+      "notes": "초대 링크 페이지는 비로그인 접근 허용 (middleware.ts에서 /invite 경로 예외 처리 확인 필요). 더미 참가 상태는 'pending' | 'approved' | 'rejected' | null로 표현",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "0d6b8742-faff-431f-8cb2-948a54449239"
+        }
+      ],
+      "createdAt": "2026-04-19T06:04:34.764Z",
+      "updatedAt": "2026-04-19T06:17:18.287Z",
+      "relatedFiles": [
+        {
+          "path": "app/(main)/invite/[token]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "초대 링크 페이지 UI"
+        },
+        {
+          "path": "middleware.ts",
+          "type": "REFERENCE",
+          "description": "/invite 비로그인 예외 처리 확인"
+        },
+        {
+          "path": "lib/mock-data.ts",
+          "type": "DEPENDENCY",
+          "description": "더미 모임 데이터"
+        },
+        {
+          "path": "types/database.ts",
+          "type": "REFERENCE",
+          "description": "MeetingRow 타입 참조"
+        }
+      ],
+      "implementationGuide": "1. app/(main)/invite/[token]/page.tsx 수정:\n   - 서버 컴포넌트에서 getClaims()로 로그인 상태 확인\n   - 더미 모임 데이터 (mock-data.ts 또는 인라인 상수)\n   - Suspense로 InviteContent 감싸기, Skeleton fallback\n2. 로그인 상태별 렌더링:\n   - 비로그인: 모임 기본 정보(제목/날짜/장소/참가비) 카드 + '로그인하여 신청' 버튼(Link to /auth/login)\n   - 로그인+더미미신청: '참가 신청' 버튼 (더미 처리, toast)\n   - 로그인+더미신청됨: 상태 배지 표시 (승인/대기[순번]/거절)\n3. Skeleton 컴포넌트: shadcn/ui Skeleton으로 카드 로딩 상태 구현\n4. 레이아웃: app/(main)/invite/[token]/page.tsx는 app/(main)/layout.tsx 하위이므로 BottomNav 자동 포함됨. 현재 인라인 main 태그 제거하고 일반 div로 변경",
+      "verificationCriteria": "1. /invite/[token] 접속 시 비로그인 상태에서 모임 기본 정보 표시\n2. '로그인하여 신청' 버튼이 /auth/login으로 연결\n3. 로그인 상태에서 '참가 신청' 버튼 표시\n4. Skeleton 로딩 UI가 Suspense fallback으로 표시\n5. TypeScript 타입 오류 없음\n6. BottomNav 하단 표시 확인",
+      "analysisResult": "Phase 2 목표: 실제 API 연동 없이 더미 데이터로 전체 앱 화면 완성. Task 003 완료 후 Task 004/005/006 병렬 진행 가능. 기술 스택: Next.js 15 App Router, TypeScript, Tailwind CSS v4, shadcn/ui (new-york), React Hook Form + Zod. 모든 타입은 types/database.ts, types/domain.ts 활용. any 타입 금지, enum 금지(as const + union type 사용), 들여쓰기 4칸, 주석 한국어.",
+      "summary": "Task 006 완료: invite/[token]/page.tsx를 서버 컴포넌트로 구현. getClaims()로 로그인 상태 확인, getMockMeetingByToken()으로 더미 모임 조회. 비로그인 시 모임 정보 미리보기 + \"로그인하여 신청\" 버튼, 로그인+미신청 시 \"참가 신청\" 버튼, 로그인+신청됨 시 상태 배지 표시. shadcn/ui Skeleton으로 Suspense fallback 구현. proxy.ts에서 /invite 비로그인 예외 처리 이미 완료 확인. TypeScript 오류 없음.",
+      "completedAt": "2026-04-19T06:17:18.284Z"
     }
   ]
 }
