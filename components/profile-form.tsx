@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { updateProfile } from "@/app/protected/profile/actions";
+import { updateProfile } from "@/app/(main)/protected/profile/actions";
 import { type Database } from "@/lib/supabase/database.types";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];

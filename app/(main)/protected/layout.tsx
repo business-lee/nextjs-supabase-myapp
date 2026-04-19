@@ -8,7 +8,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         <main className="flex min-h-screen flex-col items-center">
             <div className="flex w-full flex-1 flex-col items-center gap-20">
                 <nav className="border-b-foreground/10 flex h-16 w-full justify-center border-b">
-                    <div className="flex w-full max-w-5xl items-center justify-between p-3 px-5 text-sm">
+                    <div className="flex w-full items-center justify-between p-3 px-5 text-sm">
                         <div className="flex items-center gap-5">
                             <Link href="/" className="font-semibold">
                                 MeetUp Manager
@@ -29,7 +29,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                     </div>
                 </nav>
 
-                <div className="flex w-full max-w-5xl flex-1 flex-col gap-20 p-5">{children}</div>
+                <div className="flex w-full flex-1 flex-col gap-20 p-5">{children}</div>
 
                 <footer className="mx-auto flex w-full items-center justify-center border-t py-8 text-center text-xs">
                     <ThemeSwitcher />

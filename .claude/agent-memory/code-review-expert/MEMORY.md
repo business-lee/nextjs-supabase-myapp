@@ -1,0 +1,2 @@
+- [프로젝트 개요](project_overview.md) — Next.js App Router + Supabase 인증 기반 미팅/이벤트 관리 앱, Phase별 점진적 구현 방식
+- [반복 발견 이슈](recurring_issues.md) — 폼에서 React Hook Form 미적용, UI 텍스트 영어 혼용, 중복 코드 패턴 등 반복 이슈 기록
