@@ -11,7 +11,7 @@ async function AdminContent({ children }: { children: React.ReactNode }) {
         redirect("/auth/login");
     }
 
-    // TODO: Task 007 완료 후 profiles.is_admin 체크 추가 (Task 016)
+    // TODO: Task 011(DB 마이그레이션) 완료 후 아래 주석 해제 (Task 020)
     // const { data: profile } = await supabase.from('profiles').select('is_admin').single();
     // if (!profile?.is_admin) redirect('/protected');
 
