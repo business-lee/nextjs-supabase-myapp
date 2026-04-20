@@ -11,6 +11,10 @@
  * → 다크모드 전환이 정상 동작하는 이유
  */
 @theme inline {
+    /* 어드민 사이드바 브랜드 색상 — 여기서 한 번만 수정하면 전체 적용 */
+    --color-admin-primary: #47ae79;
+    --color-admin-primary-foreground: #47ae79;
+
     --color-background: hsl(var(--background));
     --color-foreground: hsl(var(--foreground));
     --color-card: hsl(var(--card));

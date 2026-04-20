@@ -48,7 +48,7 @@ async function AdminContent({ children }: { children: React.ReactNode }) {
 
             <div className="flex min-h-screen">
                 {/* 사이드바 — AdminSidebar 클라이언트 컴포넌트로 활성 메뉴 처리 */}
-                <aside className="bg-background w-64 shrink-0 border-r">
+                <aside className="bg-admin-primary w-64 shrink-0">
                     <div className="sticky top-0 h-screen">
                         <AdminSidebar user={user} />
                     </div>

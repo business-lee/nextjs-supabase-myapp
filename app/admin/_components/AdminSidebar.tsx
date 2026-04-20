@@ -50,8 +50,8 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
         <div className="flex h-full flex-col justify-between p-6">
             {/* 상단: 로고 및 네비게이션 */}
             <div>
-                <h1 className="mb-1 text-lg font-bold">MeetUp Manager</h1>
-                <p className="text-muted-foreground mb-8 text-xs">관리자</p>
+                <h1 className="mb-1 text-lg font-bold text-white">MeetUp Manager</h1>
+                <p className="mb-8 text-xs text-white/70">관리자</p>
                 <nav className="flex flex-col gap-1">
                     {NAV_ITEMS.map((item) => (
                         <Link
@@ -59,8 +59,8 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                             href={item.href}
                             className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                                 isActive(item)
-                                    ? "bg-accent text-accent-foreground"
-                                    : "hover:bg-accent"
+                                    ? "text-admin-primary bg-white shadow-sm"
+                                    : "text-white hover:bg-white/20"
                             }`}
                         >
                             {item.label}
@@ -71,19 +71,21 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
 
             {/* 하단: 구분선 + 관리자 프로필 */}
             <div>
-                <Separator className="mb-4" />
+                <Separator className="mb-4 bg-white/30" />
                 <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                         {user.avatar_url && (
                             <AvatarImage src={user.avatar_url} alt={user.name ?? "관리자"} />
                         )}
-                        <AvatarFallback className="text-xs">
+                        <AvatarFallback className="bg-white/20 text-xs text-white">
                             {getInitials(user.name)}
                         </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{user.name ?? "관리자"}</p>
-                        <p className="text-muted-foreground truncate text-xs">{user.email ?? ""}</p>
+                        <p className="truncate text-sm font-medium text-white">
+                            {user.name ?? "관리자"}
+                        </p>
+                        <p className="truncate text-xs text-white/70">{user.email ?? ""}</p>
                     </div>
                 </div>
             </div>
