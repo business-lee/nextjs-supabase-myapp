@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // 메뉴 아이템 타입 정의
 interface NavItem {
@@ -15,6 +15,14 @@ interface NavItem {
     exact: boolean;
 }
 
+interface AdminSidebarProps {
+    user: {
+        name: string | null;
+        email: string | null;
+        avatar_url: string | null;
+    };
+}
+
 const NAV_ITEMS: NavItem[] = [
     { href: "/admin", label: "대시보드", exact: true },
     { href: "/admin/events", label: "이벤트 관리", exact: false },
@@ -22,7 +30,12 @@ const NAV_ITEMS: NavItem[] = [
     { href: "/admin/stats", label: "통계 분석", exact: false },
 ];
 
-export default function AdminSidebar() {
+function getInitials(name: string | null): string {
+    if (!name) return "관";
+    return name.charAt(0).toUpperCase();
+}
+
+export default function AdminSidebar({ user }: AdminSidebarProps) {
     const pathname = usePathname();
 
     // 메뉴 활성 여부 판별 함수
@@ -61,11 +74,16 @@ export default function AdminSidebar() {
                 <Separator className="mb-4" />
                 <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs">관</AvatarFallback>
+                        {user.avatar_url && (
+                            <AvatarImage src={user.avatar_url} alt={user.name ?? "관리자"} />
+                        )}
+                        <AvatarFallback className="text-xs">
+                            {getInitials(user.name)}
+                        </AvatarFallback>
                     </Avatar>
-                    <div>
-                        <p className="text-sm font-medium">김관리자</p>
-                        <p className="text-muted-foreground text-xs">관리자</p>
+                    <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{user.name ?? "관리자"}</p>
+                        <p className="text-muted-foreground truncate text-xs">{user.email ?? ""}</p>
                     </div>
                 </div>
             </div>

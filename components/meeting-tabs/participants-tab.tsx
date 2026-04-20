@@ -21,7 +21,7 @@ interface ParticipantsTabProps {
 }
 
 // 상태 배지 스타일
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, waitlistOrder }: { status: string; waitlistOrder?: number | null }) {
     if (status === PARTICIPATION_STATUS.APPROVED) {
         return <Badge className="bg-green-500 text-white hover:bg-green-600">승인</Badge>;
     }
@@ -30,6 +30,13 @@ function StatusBadge({ status }: { status: string }) {
     }
     if (status === PARTICIPATION_STATUS.REJECTED) {
         return <Badge variant="destructive">거절</Badge>;
+    }
+    if (status === PARTICIPATION_STATUS.WAITLISTED) {
+        return (
+            <Badge variant="outline">
+                대기 {waitlistOrder != null ? `${waitlistOrder}번` : ""}
+            </Badge>
+        );
     }
     return null;
 }
@@ -80,7 +87,10 @@ export function ParticipantsTab({ meetingId, isHost }: ParticipantsTabProps) {
                             </Avatar>
                             <div>
                                 <p className="font-medium">{myParticipation.user.full_name}</p>
-                                <StatusBadge status={myParticipation.status} />
+                                <StatusBadge
+                                    status={myParticipation.status}
+                                    waitlistOrder={myParticipation.waitlist_order}
+                                />
                             </div>
                         </div>
                     ) : (
@@ -122,7 +132,10 @@ export function ParticipantsTab({ meetingId, isHost }: ParticipantsTabProps) {
                                     </span>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
-                                    <StatusBadge status={p.status} />
+                                    <StatusBadge
+                                        status={p.status}
+                                        waitlistOrder={p.waitlist_order}
+                                    />
                                     {p.status === PARTICIPATION_STATUS.PENDING && (
                                         <div className="flex gap-1">
                                             <Button

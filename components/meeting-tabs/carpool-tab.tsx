@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { MOCK_CARPOOL_DRIVERS } from "@/lib/mock-data";
 import type { CarpoolDriverWithPassengers } from "@/types/domain";
+import { CARPOOL_PASSENGER_STATUS } from "@/types/domain";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -133,6 +134,7 @@ export function CarpoolTab({ meetingId, isHost }: CarpoolTabProps) {
                 avatar_url: null,
                 bio: null,
                 website: null,
+                is_admin: false,
                 created_at: "",
                 updated_at: "",
             },
@@ -154,7 +156,9 @@ export function CarpoolTab({ meetingId, isHost }: CarpoolTabProps) {
                     ? {
                           ...d,
                           passengers: d.passengers.map((p) =>
-                              p.id === passengerId ? { ...p, status: "confirmed" } : p,
+                              p.id === passengerId
+                                  ? { ...p, status: CARPOOL_PASSENGER_STATUS.ACCEPTED }
+                                  : p,
                           ),
                       }
                     : d,
@@ -276,13 +280,15 @@ export function CarpoolTab({ meetingId, isHost }: CarpoolTabProps) {
                                                             <span className="text-sm">
                                                                 {passenger.passenger.full_name}
                                                             </span>
-                                                            {passenger.status === "confirmed" && (
+                                                            {passenger.status ===
+                                                                CARPOOL_PASSENGER_STATUS.ACCEPTED && (
                                                                 <Badge className="bg-green-500 text-xs text-white hover:bg-green-600">
                                                                     확정
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        {passenger.status !== "confirmed" && (
+                                                        {passenger.status !==
+                                                            CARPOOL_PASSENGER_STATUS.ACCEPTED && (
                                                             <div className="flex gap-1">
                                                                 <Button
                                                                     variant="ghost"

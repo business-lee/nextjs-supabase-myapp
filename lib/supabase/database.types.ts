@@ -16,6 +16,7 @@ export type Database = {
                     email: string;
                     full_name: string | null;
                     id: string;
+                    is_admin: boolean;
                     updated_at: string;
                     website: string | null;
                 };
@@ -26,6 +27,7 @@ export type Database = {
                     email: string;
                     full_name?: string | null;
                     id: string;
+                    is_admin?: boolean;
                     updated_at?: string;
                     website?: string | null;
                 };
@@ -36,6 +38,7 @@ export type Database = {
                     email?: string;
                     full_name?: string | null;
                     id?: string;
+                    is_admin?: boolean;
                     updated_at?: string;
                     website?: string | null;
                 };
@@ -55,6 +58,7 @@ export type Database = {
                     email: string;
                     full_name: string | null;
                     id: string;
+                    is_admin: boolean;
                     updated_at: string;
                     website: string | null;
                 };

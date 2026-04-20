@@ -32,13 +32,14 @@ export const PARTICIPATION_STATUS = {
     PENDING: "pending",
     APPROVED: "approved",
     REJECTED: "rejected",
+    WAITLISTED: "waitlisted",
 } as const;
 
 // 카풀 탑승자 상태
 export const CARPOOL_PASSENGER_STATUS = {
     PENDING: "pending",
-    CONFIRMED: "confirmed",
-    CANCELLED: "cancelled",
+    ACCEPTED: "accepted",
+    REJECTED: "rejected",
 } as const;
 
 // 정산 분배 방식

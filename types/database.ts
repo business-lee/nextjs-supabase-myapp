@@ -18,6 +18,7 @@ export interface MeetingRow {
     max_participants: number | null;
     entry_fee: number;
     approval_type: string;
+    carpool_enabled: boolean;
     status: string;
     invite_token: string;
     created_at: string;
@@ -42,7 +43,7 @@ export interface ParticipationRow {
     meeting_id: string;
     user_id: string;
     status: string;
-    joined_at: string;
+    waitlist_order: number | null;
     created_at: string;
 }
 
@@ -92,6 +93,7 @@ export interface SettlementParticipantRow {
     user_id: string;
     amount_due: number;
     is_paid: boolean;
+    paid_at: string | null;
     created_at: string;
 }
 

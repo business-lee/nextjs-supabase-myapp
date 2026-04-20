@@ -1,26 +1,48 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import AdminSidebar from "@/app/admin/_components/AdminSidebar";
+import AdminLoginPage from "@/app/admin/_components/AdminLoginPage";
 
 async function AdminContent({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getClaims();
 
+    // 미인증 → 로그인 UI (사이드바 없음)
     if (error || !data?.claims) {
-        redirect("/auth/login");
+        return <AdminLoginPage />;
     }
 
-    // TODO: Task 011(DB 마이그레이션) 완료 후 아래 주석 해제 (Task 020)
-    // const { data: profile } = await supabase.from('profiles').select('is_admin').single();
-    // if (!profile?.is_admin) redirect('/protected');
+    // 인증됨 → 관리자 권한 확인
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", data.claims.sub as string)
+        .single();
+
+    // 관리자 권한 없음 → 접근 거부 UI (사이드바 없음)
+    if (!profile?.is_admin) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="text-center">
+                    <h1 className="mb-2 text-2xl font-bold">접근 권한 없음</h1>
+                    <p className="text-muted-foreground">관리자 권한이 필요한 페이지입니다.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const user = {
+        name: (data.claims.full_name as string | null) ?? null,
+        email: (data.claims.email as string | null) ?? null,
+        avatar_url: (data.claims.avatar_url as string | null) ?? null,
+    };
 
     return (
         <>
             {/* 개발 모드 배너 - 프로덕션에서는 표시 안됨 */}
             {process.env.NODE_ENV === "development" && (
                 <div className="border-b border-yellow-300 bg-yellow-100 px-4 py-2 text-center text-sm text-yellow-800">
-                    ⚠ 개발 모드: Admin 접근 제어 미적용
+                    ⚠ 개발 모드: Admin 접근 중
                 </div>
             )}
 
@@ -28,7 +50,7 @@ async function AdminContent({ children }: { children: React.ReactNode }) {
                 {/* 사이드바 — AdminSidebar 클라이언트 컴포넌트로 활성 메뉴 처리 */}
                 <aside className="bg-background w-64 shrink-0 border-r">
                     <div className="sticky top-0 h-screen">
-                        <AdminSidebar />
+                        <AdminSidebar user={user} />
                     </div>
                 </aside>
 
