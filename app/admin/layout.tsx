@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
 import { Suspense } from "react";
+import AdminSidebar from "@/app/admin/_components/AdminSidebar";
 
 async function AdminContent({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -16,49 +16,26 @@ async function AdminContent({ children }: { children: React.ReactNode }) {
     // if (!profile?.is_admin) redirect('/protected');
 
     return (
-        <div className="flex min-h-screen">
-            {/* 사이드바 — 데스크톱 전용 */}
-            <aside className="bg-background w-64 shrink-0 border-r">
-                <div className="sticky top-0 p-6">
-                    <h1 className="mb-1 text-lg font-bold">MeetUp Manager</h1>
-                    <p className="text-muted-foreground mb-8 text-xs">관리자</p>
-                    <nav className="flex flex-col gap-1">
-                        <Link
-                            href="/admin"
-                            className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                            대시보드
-                        </Link>
-                        <Link
-                            href="/admin/events"
-                            className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                            이벤트 관리
-                        </Link>
-                        <Link
-                            href="/admin/users"
-                            className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                            사용자 관리
-                        </Link>
-                        <Link
-                            href="/admin/stats"
-                            className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                            통계 분석
-                        </Link>
-                    </nav>
+        <>
+            {/* 개발 모드 배너 - 프로덕션에서는 표시 안됨 */}
+            {process.env.NODE_ENV === "development" && (
+                <div className="border-b border-yellow-300 bg-yellow-100 px-4 py-2 text-center text-sm text-yellow-800">
+                    ⚠ 개발 모드: Admin 접근 제어 미적용
                 </div>
-            </aside>
+            )}
 
-            {/* 메인 콘텐츠 영역 */}
-            <div className="flex flex-1 flex-col">
-                <header className="bg-background flex h-14 items-center border-b px-8">
-                    <span className="text-muted-foreground text-sm">관리자 콘솔</span>
-                </header>
+            <div className="flex min-h-screen">
+                {/* 사이드바 — AdminSidebar 클라이언트 컴포넌트로 활성 메뉴 처리 */}
+                <aside className="bg-background w-64 shrink-0 border-r">
+                    <div className="sticky top-0 h-screen">
+                        <AdminSidebar />
+                    </div>
+                </aside>
+
+                {/* 메인 콘텐츠 영역 */}
                 <main className="flex-1 p-8">{children}</main>
             </div>
-        </div>
+        </>
     );
 }
 

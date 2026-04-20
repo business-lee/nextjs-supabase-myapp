@@ -12,6 +12,7 @@ import type {
     SettlementItemRow,
     SettlementParticipantRow,
     MeetingRow,
+    AdminProfileRow,
 } from "@/types/database";
 
 // ─────────────────────────────────────────────
@@ -487,4 +488,134 @@ export function getMockJoinedMeetingCards() {
 // 초대 토큰으로 더미 모임 조회 (host 정보 포함)
 export function getMockMeetingByToken(token: string): MeetingWithHost | undefined {
     return MOCK_MEETINGS.find((m) => m.invite_token === token);
+}
+
+// ─────────────────────────────────────────────
+// Admin 전용 더미 데이터
+// ─────────────────────────────────────────────
+
+export interface AdminStats {
+    total_meetings: number;
+    new_meetings_this_month: number;
+    total_users: number;
+    new_users_this_month: number;
+}
+
+export const MOCK_ADMIN_STATS: AdminStats = {
+    total_meetings: 5,
+    new_meetings_this_month: 3,
+    total_users: 5,
+    new_users_this_month: 2,
+};
+
+export function getMockAdminStats(): AdminStats {
+    return MOCK_ADMIN_STATS;
+}
+
+export function getMockRecentUsers(limit = 5): AdminProfileRow[] {
+    return getMockAdminUsers()
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, limit);
+}
+
+export function getMockRecentMeetings(limit = 5): MeetingWithHost[] {
+    return [...MOCK_MEETINGS]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, limit);
+}
+
+// Admin 이벤트 관리 목록 데이터 타입 및 함수
+export interface AdminMeetingRow {
+    id: string;
+    title: string;
+    host_name: string | null;
+    event_at: string;
+    status: string;
+    participant_count: number;
+    max_participants: number | null;
+    approval_type: string;
+    invite_token: string | null;
+}
+
+export function getMockAdminMeetings(): AdminMeetingRow[] {
+    return MOCK_MEETINGS.map((m) => ({
+        id: m.id,
+        title: m.title,
+        host_name: m.host.full_name,
+        event_at: m.event_at,
+        status: m.status,
+        participant_count: getMockParticipationStats(m.id).approved,
+        max_participants: m.max_participants,
+        approval_type: m.approval_type,
+        invite_token: m.invite_token,
+    }));
+}
+
+// 차트 더미 데이터 타입 및 상수
+
+export interface UserGrowthData {
+    month: string;
+    count: number;
+}
+
+export interface MeetingTrendData {
+    month: string;
+    created: number;
+    joined: number;
+}
+
+export interface FeatureUsageData {
+    name: string;
+    value: number;
+    fill: string;
+}
+
+export const MOCK_USER_GROWTH: UserGrowthData[] = [
+    { month: "11월", count: 2 },
+    { month: "12월", count: 5 },
+    { month: "1월", count: 8 },
+    { month: "2월", count: 6 },
+    { month: "3월", count: 12 },
+    { month: "4월", count: 9 },
+];
+
+export const MOCK_MEETING_TREND: MeetingTrendData[] = [
+    { month: "11월", created: 1, joined: 3 },
+    { month: "12월", created: 2, joined: 7 },
+    { month: "1월", created: 3, joined: 10 },
+    { month: "2월", created: 2, joined: 8 },
+    { month: "3월", created: 4, joined: 14 },
+    { month: "4월", created: 3, joined: 11 },
+];
+
+export const MOCK_FEATURE_USAGE: FeatureUsageData[] = [
+    { name: "기본(모임)", value: 45, fill: "hsl(var(--chart-1))" },
+    { name: "카풀", value: 30, fill: "hsl(var(--chart-2))" },
+    { name: "정산", value: 25, fill: "hsl(var(--chart-3))" },
+];
+
+// Admin 사용자 관리 목록 데이터
+export function getMockAdminUsers(): AdminProfileRow[] {
+    return [
+        {
+            id: MOCK_HOST.id,
+            email: MOCK_HOST.email,
+            full_name: MOCK_HOST.full_name,
+            avatar_url: MOCK_HOST.avatar_url,
+            created_at: MOCK_HOST.created_at,
+            is_admin: true,
+            meeting_count: 3,
+            created_meeting_count: 5,
+        },
+        ...MOCK_MEMBERS.map((m, i) => ({
+            id: m.id,
+            email: m.email,
+            full_name: m.full_name,
+            avatar_url: m.avatar_url,
+            created_at: m.created_at,
+            is_admin: false,
+            meeting_count: i < 2 ? 2 : 1,
+            created_meeting_count: [2, 1, 0, 1][i] ?? 0,
+        })),
+    ];
 }

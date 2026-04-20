@@ -94,3 +94,15 @@ export interface SettlementParticipantRow {
     is_paid: boolean;
     created_at: string;
 }
+
+// Admin 사용자 관리용 Row 타입
+export interface AdminProfileRow {
+    id: string;
+    email: string | null;
+    full_name: string | null;
+    avatar_url: string | null;
+    created_at: string;
+    is_admin: boolean;
+    meeting_count: number;
+    created_meeting_count: number;
+}
