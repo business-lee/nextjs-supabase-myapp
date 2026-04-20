@@ -3,9 +3,12 @@
 // Admin 사이드바 컴포넌트 - 현재 경로에 따라 활성 메뉴 하이라이트 처리
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 // 메뉴 아이템 타입 정의
 interface NavItem {
@@ -37,6 +40,14 @@ function getInitials(name: string | null): string {
 
 export default function AdminSidebar({ user }: AdminSidebarProps) {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push("/");
+        router.refresh();
+    };
 
     // 메뉴 활성 여부 판별 함수
     function isActive(item: NavItem): boolean {
@@ -81,12 +92,21 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                             {getInitials(user.name)}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-white">
                             {user.name ?? "관리자"}
                         </p>
                         <p className="truncate text-xs text-white/70">{user.email ?? ""}</p>
                     </div>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleLogout}
+                        className="shrink-0 text-white/70 hover:bg-white/20 hover:text-white"
+                        title="로그아웃"
+                    >
+                        <LogOut className="h-4 w-4" />
+                    </Button>
                 </div>
             </div>
         </div>

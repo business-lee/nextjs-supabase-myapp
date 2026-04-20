@@ -9,7 +9,7 @@ async function ErrorContent({ searchParams }: { searchParams: Promise<{ error: s
             {params?.error ? (
                 <p className="text-muted-foreground text-sm">Code error: {params.error}</p>
             ) : (
-                <p className="text-muted-foreground text-sm">An unspecified error occurred.</p>
+                <p className="text-muted-foreground text-sm">알 수 없는 오류가 발생했습니다.</p>
             )}
         </>
     );
@@ -22,7 +22,9 @@ export default function Page({ searchParams }: { searchParams: Promise<{ error: 
                 <div className="flex flex-col gap-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-2xl">Sorry, something went wrong.</CardTitle>
+                            <CardTitle className="text-2xl">
+                                죄송합니다. 문제가 발생했습니다.
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Suspense>
