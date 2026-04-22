@@ -32,6 +32,9 @@ export const meetingSchema = z.object({
 
     // 승인 방식 (자동 승인 또는 수동 승인)
     approval_type: z.union([z.literal(APPROVAL_TYPE.AUTO), z.literal(APPROVAL_TYPE.MANUAL)]),
+
+    // 썸네일 이미지 URL (선택)
+    thumbnail_url: z.string().url().nullable().optional(),
 });
 
 // 모임 수정 스키마 (event_at 제외)

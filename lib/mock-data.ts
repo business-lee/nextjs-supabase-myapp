@@ -96,6 +96,7 @@ export const MOCK_MEETINGS: MeetingWithHost[] = [
         carpool_enabled: true,
         status: "upcoming",
         invite_token: "token-001",
+        thumbnail_url: null,
         created_at: "2026-04-19T10:00:00Z",
         updated_at: "2026-04-19T10:00:00Z",
         host: MOCK_HOST,
@@ -113,6 +114,7 @@ export const MOCK_MEETINGS: MeetingWithHost[] = [
         carpool_enabled: true,
         status: "upcoming",
         invite_token: "token-002",
+        thumbnail_url: null,
         created_at: "2026-04-18T15:00:00Z",
         updated_at: "2026-04-18T15:00:00Z",
         host: MOCK_HOST,
@@ -130,6 +132,7 @@ export const MOCK_MEETINGS: MeetingWithHost[] = [
         carpool_enabled: false,
         status: "upcoming",
         invite_token: "token-003",
+        thumbnail_url: null,
         created_at: "2026-04-15T09:00:00Z",
         updated_at: "2026-04-15T09:00:00Z",
         host: MOCK_HOST,
@@ -147,6 +150,7 @@ export const MOCK_MEETINGS: MeetingWithHost[] = [
         carpool_enabled: false,
         status: "closed",
         invite_token: "token-004",
+        thumbnail_url: null,
         created_at: "2026-03-01T00:00:00Z",
         updated_at: "2026-03-22T18:00:00Z",
         host: MOCK_HOST,
@@ -164,6 +168,7 @@ export const MOCK_MEETINGS: MeetingWithHost[] = [
         carpool_enabled: true,
         status: "upcoming",
         invite_token: "token-005",
+        thumbnail_url: null,
         created_at: "2026-04-17T11:00:00Z",
         updated_at: "2026-04-17T11:00:00Z",
         host: MOCK_HOST,
@@ -548,6 +553,7 @@ export interface AdminMeetingRow {
     max_participants: number | null;
     approval_type: string;
     invite_token: string | null;
+    thumbnail_url: string | null;
 }
 
 export function getMockAdminMeetings(): AdminMeetingRow[] {
@@ -561,6 +567,7 @@ export function getMockAdminMeetings(): AdminMeetingRow[] {
         max_participants: m.max_participants,
         approval_type: m.approval_type,
         invite_token: m.invite_token,
+        thumbnail_url: m.thumbnail_url,
     }));
 }
 

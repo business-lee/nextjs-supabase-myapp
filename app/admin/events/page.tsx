@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
+import { ImageIcon } from "lucide-react";
 import { getMockAdminMeetings } from "@/lib/mock-data";
 import type { AdminMeetingRow } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
@@ -153,6 +155,7 @@ export default function AdminEventsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="px-6 py-4 text-center">썸네일</TableHead>
                                 <TableHead className="px-6 py-4 text-center">제목</TableHead>
                                 <TableHead className="px-6 py-4 text-center">주최자</TableHead>
                                 <TableHead className="px-6 py-4 text-center">날짜</TableHead>
@@ -167,6 +170,25 @@ export default function AdminEventsPage() {
                         <TableBody>
                             {filteredMeetings.map((meeting) => (
                                 <TableRow key={meeting.id}>
+                                    <TableCell className="px-6 py-4 text-center">
+                                        {meeting.thumbnail_url ? (
+                                            <div className="relative mx-auto h-10 w-16 overflow-hidden rounded">
+                                                <Image
+                                                    src={meeting.thumbnail_url}
+                                                    alt=""
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="bg-muted mx-auto flex h-10 w-16 items-center justify-center rounded">
+                                                <ImageIcon
+                                                    size={16}
+                                                    className="text-muted-foreground/40"
+                                                />
+                                            </div>
+                                        )}
+                                    </TableCell>
                                     <TableCell className="px-6 py-4 font-medium">
                                         {meeting.title}
                                     </TableCell>

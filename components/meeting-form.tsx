@@ -25,6 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { ImageUpload } from "@/components/image-upload";
 
 interface MeetingFormProps {
     isEditMode?: boolean;
@@ -46,6 +47,7 @@ export function MeetingForm({ isEditMode = false, defaultValues, meetingId }: Me
             max_participants: undefined,
             entry_fee: 0,
             approval_type: APPROVAL_TYPE.AUTO,
+            thumbnail_url: null,
             ...defaultValues,
         },
     });
@@ -178,6 +180,24 @@ export function MeetingForm({ isEditMode = false, defaultValues, meetingId }: Me
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                {/* 썸네일 이미지 */}
+                <FormField
+                    control={form.control}
+                    name="thumbnail_url"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>썸네일 이미지</FormLabel>
+                            <FormControl>
+                                <ImageUpload
+                                    value={field.value ?? null}
+                                    onChange={field.onChange}
+                                />
+                            </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
