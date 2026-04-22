@@ -131,9 +131,10 @@
 
 ### 모임 관리
 
-- 모임 생성: 제목, 날짜/시간, 장소, 최대 인원, 설명, 참가비 입력
+- 모임 생성: 제목, 날짜/시간, 장소, 최대 인원, 설명, 참가비, 썸네일 이미지 입력
 - 모임 수정 및 취소(취소 시 참여자에게 상태 변경 반영)
 - 주최자 대시보드: 운영 중인 모임 목록과 각 모임의 참여 현황 요약
+- 썸네일 이미지: Supabase Storage(meeting-thumbnails 버킷) 업로드, 주최자가 상세 페이지에서 직접 교체/삭제 가능
 
 ### 공지사항 관리
 
@@ -207,6 +208,7 @@
 
 ### 모임 상세 페이지
 
+- 썸네일: 상단 풀 너비 이미지 영역. 주최자는 클릭(이미지 없을 때) 또는 연필/X 버튼(이미지 있을 때)으로 교체·삭제
 - 탭 구조: `공지` | `참여자` | `카풀` | `정산`
 - 탭 간 이동 시 URL 쿼리 파라미터(`?tab=notices`)로 상태 유지
 - 주최자와 참여자가 동일 URL을 사용하되, 역할에 따라 관리 기능 표시 여부 분기
@@ -260,6 +262,7 @@ meetings
   - carpool_enabled (boolean, default false)
   - status (text, default 'upcoming')        -- 'upcoming' | 'ongoing' | 'closed' | 'cancelled'
   - invite_token (text, UNIQUE)             -- 초대 링크 토큰
+  - thumbnail_url (text, nullable)          -- Supabase Storage 공개 URL
   - created_at (timestamptz)
 
 notices
