@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getMockCreatedMeetingCards, getMockJoinedMeetingCards } from "@/lib/mock-data";
+import { getCreatedMeetingsAction, getJoinedMeetingsAction } from "@/lib/actions/meeting";
 import { MeetingCard } from "@/components/meeting-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,8 +15,11 @@ async function MeetingsContent() {
         redirect("/auth/login");
     }
 
-    const createdMeetings = getMockCreatedMeetingCards();
-    const joinedMeetings = getMockJoinedMeetingCards();
+    const userId = data.claims.sub;
+    const [createdMeetings, joinedMeetings] = await Promise.all([
+        getCreatedMeetingsAction(userId),
+        getJoinedMeetingsAction(userId),
+    ]);
 
     return (
         <>

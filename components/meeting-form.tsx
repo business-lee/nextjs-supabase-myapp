@@ -4,9 +4,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { meetingSchema, type MeetingFormValues } from "@/lib/validations/meeting";
+import {
+    meetingSchema,
+    meetingUpdateSchema,
+    type MeetingFormValues,
+} from "@/lib/validations/meeting";
 import type { Resolver } from "react-hook-form";
 import { APPROVAL_TYPE } from "@/types/domain";
+import { createMeetingAction, updateMeetingAction } from "@/lib/actions/meeting";
 import {
     Form,
     FormControl,
@@ -52,11 +57,32 @@ export function MeetingForm({ isEditMode = false, defaultValues, meetingId }: Me
         },
     });
 
-    function onSubmit(values: MeetingFormValues) {
-        // Phase 3에서 실제 API 연동 예정, 현재는 더미 처리
-        console.log("폼 제출 값:", values);
-        toast.success(isEditMode ? "모임이 수정되었습니다." : "모임이 생성되었습니다.");
-        router.push("/protected");
+    async function onSubmit(values: MeetingFormValues) {
+        if (isEditMode && meetingId) {
+            // 수정 모드: event_at을 제외한 필드만 업데이트
+            const { event_at: _omit, ...updateValues } = values;
+            const parsed = meetingUpdateSchema.safeParse(updateValues);
+            if (!parsed.success) {
+                toast.error("입력값이 올바르지 않습니다.");
+                return;
+            }
+            const result = await updateMeetingAction(meetingId, parsed.data);
+            if (!result.success) {
+                toast.error(result.error);
+                return;
+            }
+            toast.success("모임이 수정되었습니다.");
+            router.push(`/protected/meetings/${meetingId}`);
+        } else {
+            // 생성 모드
+            const result = await createMeetingAction(values);
+            if (!result.success) {
+                toast.error(result.error);
+                return;
+            }
+            toast.success("모임이 생성되었습니다.");
+            router.push(`/protected/meetings/${result.data.id}`);
+        }
     }
 
     return (
@@ -229,11 +255,18 @@ export function MeetingForm({ isEditMode = false, defaultValues, meetingId }: Me
                         variant="outline"
                         className="flex-1"
                         onClick={() => router.back()}
+                        disabled={form.formState.isSubmitting}
                     >
                         취소
                     </Button>
-                    <Button type="submit" className="flex-1">
-                        {isEditMode ? "수정 완료" : "모임 만들기"}
+                    <Button type="submit" className="flex-1" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting
+                            ? isEditMode
+                                ? "수정 중..."
+                                : "생성 중..."
+                            : isEditMode
+                              ? "수정 완료"
+                              : "모임 만들기"}
                     </Button>
                 </div>
             </form>

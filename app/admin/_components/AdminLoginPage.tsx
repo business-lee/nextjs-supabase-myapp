@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,7 @@ export default function AdminLoginPage() {
             if (signInError) throw signInError;
             router.push("/admin");
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "로그인 중 오류가 발생했습니다.");
+            setError(translateAuthError(err instanceof Error ? err.message : "An error occurred"));
         } finally {
             setIsLoading(false);
         }
@@ -50,7 +51,7 @@ export default function AdminLoginPage() {
             });
             if (oauthError) throw oauthError;
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Google 로그인 중 오류가 발생했습니다.");
+            setError(translateAuthError(err instanceof Error ? err.message : "An error occurred"));
             setIsGoogleLoading(false);
         }
     };

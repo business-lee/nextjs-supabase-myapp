@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getMockMeetingById } from "@/lib/mock-data";
 import { MeetingForm } from "@/components/meeting-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ApprovalType } from "@/types/domain";
@@ -18,11 +17,24 @@ async function EditContent({ id }: { id: string }) {
         redirect("/auth/login");
     }
 
-    // 더미 데이터에서 모임 정보 조회 (Phase 3에서 실제 DB 조회로 교체)
-    const meeting = getMockMeetingById(id) ?? getMockMeetingById("meeting-001")!;
+    const userId = data.claims.sub;
 
-    // datetime-local input 형식으로 변환 (YYYY-MM-DDTHH:mm)
-    const eventAtLocal = meeting.event_at.slice(0, 16);
+    // 본인이 호스트인 모임만 수정 가능
+    const { data: meeting } = await supabase
+        .from("meetings")
+        .select("*")
+        .eq("id", id)
+        .eq("host_id", userId)
+        .single();
+
+    if (!meeting) {
+        redirect("/protected/meetings");
+    }
+
+    // datetime-local input은 로컬 시간 기준으로 변환해야 함 (UTC 그대로 쓰면 시차 오류 발생)
+    const d = new Date(meeting.event_at);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const eventAtLocal = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
     return (
         <div className="flex flex-col gap-5 p-4">
@@ -41,6 +53,7 @@ async function EditContent({ id }: { id: string }) {
                     max_participants: meeting.max_participants ?? undefined,
                     entry_fee: meeting.entry_fee,
                     approval_type: meeting.approval_type as ApprovalType,
+                    thumbnail_url: meeting.thumbnail_url ?? null,
                 }}
             />
         </div>

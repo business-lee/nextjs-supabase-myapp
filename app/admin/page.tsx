@@ -79,7 +79,7 @@ export default function AdminPage() {
                                             {meeting.title}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground whitespace-nowrap">
-                                            {meeting.host.full_name ?? "-"}
+                                            {meeting.host?.full_name ?? "-"}
                                         </TableCell>
                                         <TableCell className="text-muted-foreground whitespace-nowrap">
                                             {new Date(meeting.event_at).toLocaleDateString("ko-KR")}

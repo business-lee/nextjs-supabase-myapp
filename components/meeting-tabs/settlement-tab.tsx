@@ -2,13 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-    MOCK_SETTLEMENT,
-    MOCK_SETTLEMENT_ITEMS,
-    MOCK_SETTLEMENT_PARTICIPANTS,
-} from "@/lib/mock-data";
-import type { SettlementItemRow, SettlementParticipantRow } from "@/types/database";
+import type { SettlementItemRow, SettlementRow } from "@/types/database";
 import { SETTLEMENT_SPLIT_TYPE } from "@/types/domain";
+import type { SettlementSplitType } from "@/types/domain";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,34 +14,47 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2 } from "lucide-react";
-import type { SettlementSplitType } from "@/types/domain";
+import {
+    createOrUpdateSettlementAction,
+    addSettlementItemAction,
+    deleteSettlementItemAction,
+    togglePaidAction,
+    initializeSettlementParticipantsAction,
+} from "@/lib/actions/settlement";
+import type { SettlementData, SettlementParticipantWithUser } from "@/lib/actions/settlement";
 
 interface SettlementTabProps {
     meetingId: string;
     isHost: boolean;
+    currentUserId: string;
+    initialSettlement: SettlementData;
 }
 
-// 더미 참가자 이름 매핑
-const MEMBER_NAMES: Record<string, string> = {
-    "member-001": "이민호",
-    "member-002": "박지영",
-    "host-001": "김주최 (주최자)",
-};
-
-export function SettlementTab({ meetingId: _meetingId, isHost }: SettlementTabProps) {
-    const [splitType, setSplitType] = useState<SettlementSplitType>(
-        MOCK_SETTLEMENT.split_type as SettlementSplitType,
+export function SettlementTab({
+    meetingId,
+    isHost,
+    currentUserId,
+    initialSettlement,
+}: SettlementTabProps) {
+    // 정산이 없는 경우(null)와 있는 경우를 분기 처리
+    const [settlement, setSettlement] = useState<SettlementRow | null>(
+        initialSettlement?.settlement ?? null,
     );
-    const [items, setItems] = useState<SettlementItemRow[]>(MOCK_SETTLEMENT_ITEMS);
-    const [participants, setParticipants] = useState<SettlementParticipantRow[]>(
-        MOCK_SETTLEMENT_PARTICIPANTS,
+    const [items, setItems] = useState<SettlementItemRow[]>(initialSettlement?.items ?? []);
+    const [participants, setParticipants] = useState<SettlementParticipantWithUser[]>(
+        initialSettlement?.participants ?? [],
+    );
+    const [splitType, setSplitType] = useState<SettlementSplitType>(
+        (initialSettlement?.settlement?.split_type as SettlementSplitType) ??
+            SETTLEMENT_SPLIT_TYPE.EQUAL,
     );
     const [newItemLabel, setNewItemLabel] = useState("");
     const [newItemAmount, setNewItemAmount] = useState("");
 
+    // 비용 항목 합계를 실시간으로 계산
     const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
 
-    function handleAddItem() {
+    async function handleAddItem() {
         if (!newItemLabel.trim()) {
             toast.error("항목 이름을 입력해주세요.");
             return;
@@ -55,24 +64,54 @@ export function SettlementTab({ meetingId: _meetingId, isHost }: SettlementTabPr
             toast.error("올바른 금액을 입력해주세요.");
             return;
         }
-        const newItem: SettlementItemRow = {
-            id: `item-${Date.now()}`,
-            settlement_id: "settlement-001",
-            label: newItemLabel,
+
+        // 정산이 없으면 먼저 생성 후 참여자 초기화
+        let currentSettlementId = settlement?.id;
+        if (!currentSettlementId) {
+            const createResult = await createOrUpdateSettlementAction(meetingId, splitType, 0);
+            if (!createResult.success) {
+                toast.error(createResult.error);
+                return;
+            }
+            setSettlement(createResult.data);
+            currentSettlementId = createResult.data.id;
+
+            // 모임 approved 참여자를 정산 참여자로 자동 초기화
+            await initializeSettlementParticipantsAction(currentSettlementId, meetingId);
+        }
+
+        const result = await addSettlementItemAction(
+            currentSettlementId,
+            meetingId,
+            newItemLabel,
             amount,
-            created_at: new Date().toISOString(),
-        };
-        setItems((prev) => [...prev, newItem]);
+        );
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
+        setItems((prev) => [...prev, result.data]);
         setNewItemLabel("");
         setNewItemAmount("");
         toast.success("항목이 추가되었습니다.");
     }
 
-    function handleDeleteItem(id: string) {
+    async function handleDeleteItem(id: string) {
+        if (!settlement?.id) return;
+        const result = await deleteSettlementItemAction(id, settlement.id, meetingId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setItems((prev) => prev.filter((item) => item.id !== id));
     }
 
-    function handleTogglePaid(participantId: string, checked: boolean) {
+    async function handleTogglePaid(participantId: string, checked: boolean) {
+        const result = await togglePaidAction(participantId, checked, meetingId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setParticipants((prev) =>
             prev.map((p) => (p.id === participantId ? { ...p, is_paid: checked } : p)),
         );
@@ -87,6 +126,14 @@ export function SettlementTab({ meetingId: _meetingId, isHost }: SettlementTabPr
                     <CardTitle className="text-base">비용 항목</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3">
+                    {items.length === 0 && (
+                        <p className="text-muted-foreground text-sm">
+                            {isHost
+                                ? "아래에서 항목을 추가해주세요."
+                                : "등록된 비용 항목이 없습니다."}
+                        </p>
+                    )}
+
                     {items.map((item) => (
                         <div key={item.id} className="flex items-center justify-between">
                             <span className="text-sm">{item.label}</span>
@@ -189,34 +236,51 @@ export function SettlementTab({ meetingId: _meetingId, isHost }: SettlementTabPr
                     <CardTitle className="text-base">납부 현황</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3">
-                    {participants.map((p) => (
-                        <div key={p.id} className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                {isHost && (
-                                    <Checkbox
-                                        checked={p.is_paid}
-                                        onCheckedChange={(checked) =>
-                                            handleTogglePaid(p.id, checked === true)
+                    {participants.length === 0 && (
+                        <p className="text-muted-foreground text-sm">
+                            납부 현황 데이터가 없습니다.
+                        </p>
+                    )}
+
+                    {participants.map((p) => {
+                        // 주최자는 모든 참여자 납부 체크 가능
+                        // 비주최자는 본인 행만 체크 가능
+                        const canToggle = isHost || p.user_id === currentUserId;
+
+                        return (
+                            <div key={p.id} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    {canToggle ? (
+                                        <Checkbox
+                                            checked={p.is_paid}
+                                            onCheckedChange={(checked) =>
+                                                handleTogglePaid(p.id, checked === true)
+                                            }
+                                        />
+                                    ) : (
+                                        // 체크 불가 참여자는 납부 상태를 시각적으로만 표시
+                                        <div className="h-4 w-4 flex-shrink-0" />
+                                    )}
+                                    <span className="text-sm">
+                                        {p.user.full_name ?? "알 수 없음"}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium">
+                                        {p.amount_due.toLocaleString()}원
+                                    </span>
+                                    <Badge
+                                        variant={p.is_paid ? "default" : "secondary"}
+                                        className={
+                                            p.is_paid ? "bg-green-500 hover:bg-green-600" : ""
                                         }
-                                    />
-                                )}
-                                <span className="text-sm">
-                                    {MEMBER_NAMES[p.user_id] ?? p.user_id}
-                                </span>
+                                    >
+                                        {p.is_paid ? "납부" : "미납"}
+                                    </Badge>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">
-                                    {p.amount_due.toLocaleString()}원
-                                </span>
-                                <Badge
-                                    variant={p.is_paid ? "default" : "secondary"}
-                                    className={p.is_paid ? "bg-green-500 hover:bg-green-600" : ""}
-                                >
-                                    {p.is_paid ? "납부" : "미납"}
-                                </Badge>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </CardContent>
             </Card>
         </div>

@@ -15,7 +15,15 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, Copy, ImageIcon, MapPin, Pencil, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import type { MeetingWithHost, ParticipationWithUser, MeetingStatus } from "@/types/domain";
+import { cancelMeetingAction } from "@/lib/actions/meeting";
+import type {
+    MeetingWithHost,
+    ParticipationWithUser,
+    MeetingStatus,
+    CarpoolDriverWithPassengers,
+} from "@/types/domain";
+import type { NoticeRow } from "@/types/database";
+import type { SettlementData } from "@/lib/actions/settlement";
 
 type TabKey = "notices" | "participants" | "carpool" | "settlement";
 
@@ -63,6 +71,12 @@ interface MeetingDetailClientProps {
     meeting: MeetingWithHost;
     isHost: boolean;
     myParticipation: ParticipationWithUser | null;
+    currentUserId: string;
+    initialParticipations: ParticipationWithUser[];
+    initialNotices: NoticeRow[];
+    initialCarpoolEnabled: boolean;
+    initialCarpoolDrivers: CarpoolDriverWithPassengers[];
+    initialSettlement: SettlementData;
 }
 
 export function MeetingDetailClient({
@@ -71,6 +85,12 @@ export function MeetingDetailClient({
     meeting,
     isHost,
     myParticipation,
+    currentUserId,
+    initialParticipations,
+    initialNotices,
+    initialCarpoolEnabled,
+    initialCarpoolDrivers,
+    initialSettlement,
 }: MeetingDetailClientProps) {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -121,10 +141,15 @@ export function MeetingDetailClient({
         toast.success("초대 링크가 복사되었습니다.");
     }
 
-    function handleCancelConfirm() {
+    async function handleCancelConfirm() {
+        const result = await cancelMeetingAction(id);
         setCancelDialogOpen(false);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         toast.success("모임이 취소되었습니다.");
-        router.push("/protected");
+        router.push("/protected/meetings");
     }
 
     return (
@@ -280,10 +305,35 @@ export function MeetingDetailClient({
 
             {/* 탭 콘텐츠 */}
             <div className="p-4">
-                {activeTab === "notices" && <NoticesTab meetingId={id} isHost={isHost} />}
-                {activeTab === "participants" && <ParticipantsTab meetingId={id} isHost={isHost} />}
-                {activeTab === "carpool" && <CarpoolTab meetingId={id} isHost={isHost} />}
-                {activeTab === "settlement" && <SettlementTab meetingId={id} isHost={isHost} />}
+                {activeTab === "notices" && (
+                    <NoticesTab meetingId={id} isHost={isHost} initialNotices={initialNotices} />
+                )}
+                {activeTab === "participants" && (
+                    <ParticipantsTab
+                        meetingId={id}
+                        isHost={isHost}
+                        currentUserId={currentUserId}
+                        initialParticipations={initialParticipations}
+                        hostProfile={meeting.host}
+                    />
+                )}
+                {activeTab === "carpool" && (
+                    <CarpoolTab
+                        meetingId={id}
+                        isHost={isHost}
+                        currentUserId={currentUserId}
+                        initialCarpoolEnabled={initialCarpoolEnabled}
+                        initialCarpoolDrivers={initialCarpoolDrivers}
+                    />
+                )}
+                {activeTab === "settlement" && (
+                    <SettlementTab
+                        meetingId={id}
+                        isHost={isHost}
+                        currentUserId={currentUserId}
+                        initialSettlement={initialSettlement}
+                    />
+                )}
             </div>
 
             <MeetingCancelDialog

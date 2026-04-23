@@ -1,164 +1,201 @@
 {
   "tasks": [
     {
-      "id": "8bd5e94e-01b3-4023-9779-e81788c627d2",
-      "name": "Task 007: Admin 레이아웃 고도화 및 대시보드 UI 구현",
-      "description": "app/admin/layout.tsx의 사이드바를 클라이언트 컴포넌트(AdminSidebar)로 분리하여 usePathname 기반 활성 경로 하이라이트를 추가한다. 사이드바 하단에 더미 사용자 아바타와 이름을 표시하고, 개발 모드 배너를 추가한다. app/admin/page.tsx에 주요 지표 카드 4개와 최근 모임 테이블을 구현한다. lib/mock-data.ts에 Admin 전용 더미 데이터를 추가한다.\n\n수락 기준:\n- 사이드바 현재 경로에 해당하는 메뉴가 bg-accent 등으로 하이라이트됨\n- 사이드바 하단에 사용자 아바타와 이름(더미) 표시\n- development 환경에서만 개발 모드 배너 표시\n- 대시보드에 총 모임 수/이번 달 신규 모임/총 사용자 수/이번 달 신규 가입 카드 4개 표시\n- 최근 모임 테이블 5행 표시\n- shadcn/ui Table 컴포넌트 설치 완료",
-      "notes": "AdminSidebar는 usePathname 사용으로 반드시 클라이언트 컴포넌트여야 함. layout.tsx는 서버 컴포넌트 유지. shadcn/ui Avatar 컴포넌트는 이미 설치되어 있음.",
+      "id": "0059cbaa-cb62-43bd-b354-dc58a251a9f0",
+      "name": "DB 마이그레이션 — thumbnail_url 컬럼 추가",
+      "description": "meetings 테이블에 thumbnail_url TEXT (nullable) 컬럼을 추가하는 마이그레이션 파일을 생성하고 Supabase MCP로 적용한다.",
+      "notes": "IF NOT EXISTS로 멱등성 보장",
       "status": "completed",
       "dependencies": [],
-      "createdAt": "2026-04-20T02:13:33.036Z",
-      "updatedAt": "2026-04-20T02:23:13.072Z",
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:22:39.352Z",
       "relatedFiles": [
         {
-          "path": "app/admin/layout.tsx",
-          "type": "TO_MODIFY",
-          "description": "AdminSidebar 컴포넌트로 교체, 개발 모드 배너 추가"
-        },
-        {
-          "path": "app/admin/_components/AdminSidebar.tsx",
+          "path": "supabase/migrations/20260420000006_meeting_thumbnail.sql",
           "type": "CREATE",
-          "description": "usePathname 기반 활성 하이라이트 사이드바 클라이언트 컴포넌트"
-        },
-        {
-          "path": "app/admin/page.tsx",
-          "type": "TO_MODIFY",
-          "description": "주요 지표 카드 4개 + 최근 모임 테이블 구현"
-        },
-        {
-          "path": "lib/mock-data.ts",
-          "type": "TO_MODIFY",
-          "description": "Admin 전용 더미 데이터 섹션 추가"
-        },
-        {
-          "path": "types/domain.ts",
-          "type": "REFERENCE",
-          "description": "MeetingStatus 등 타입 참조"
+          "description": "thumbnail_url 컬럼 추가 마이그레이션"
         }
       ],
-      "implementationGuide": "1. npx shadcn@latest add table 실행\n2. app/admin/_components/AdminSidebar.tsx 신규 생성 ('use client', usePathname으로 현재 경로 감지, cn() 유틸로 활성 클래스 적용, 사이드바 하단 Avatar+이름 더미 표시)\n3. app/admin/layout.tsx 수정: AdminSidebar import, 개발 모드 배너 추가 (process.env.NODE_ENV === 'development')\n4. lib/mock-data.ts 하단에 Admin 섹션 추가:\n   - AdminStats 인터페이스 (total_meetings, new_meetings_this_month, total_users, new_users_this_month)\n   - MOCK_ADMIN_STATS 상수\n   - getMockAdminStats() 함수\n5. app/admin/page.tsx 구현: getMockAdminStats() + MOCK_MEETINGS 사용, shadcn/ui Card 4개 + Table로 최근 5개 모임 표시",
-      "verificationCriteria": "브라우저에서 /admin 접속 시: 1) 사이드바 '대시보드' 메뉴 하이라이트, 2) 지표 카드 4개 표시, 3) 최근 모임 테이블 표시, 4) development 환경에서 배너 표시",
-      "analysisResult": "Phase 2 Admin UI/UX 완성 목표: 더미 데이터 기반으로 Admin 레이아웃 고도화 및 대시보드/이벤트관리/사용자관리/통계분석 4개 페이지 UI를 완성한다. 실제 DB 연동 없이 shadcn/ui 컴포넌트와 mock-data.ts 더미 데이터를 활용하며, 데스크톱 우선 레이아웃으로 구현한다. 기존 코드 패턴(서버/클라이언트 컴포넌트 분리, as const 타입, 4칸 들여쓰기, 한국어 UI)을 준수한다.",
-      "summary": "AdminSidebar 클라이언트 컴포넌트 분리(usePathname 활성 하이라이트, 하단 아바타+이름), 개발 모드 배너 추가, 대시보드 4개 지표 카드 + shadcn/ui Table 최근 모임 5개 표시, AdminStats 더미 데이터 추가. npm run build 성공.",
-      "completedAt": "2026-04-20T02:23:13.069Z"
+      "implementationGuide": "1. supabase/migrations/20260420000006_meeting_thumbnail.sql 파일 생성\n2. 내용: ALTER TABLE meetings ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;\n3. mcp__supabase__apply_migration 도구로 마이그레이션 적용\n4. mcp__supabase__generate_typescript_types로 타입 재생성 확인",
+      "verificationCriteria": "Supabase 콘솔에서 meetings 테이블에 thumbnail_url 컬럼이 존재하고 nullable TEXT 타입인지 확인",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "meetings 테이블에 thumbnail_url TEXT nullable 컬럼 추가 마이그레이션 완료. supabase/migrations/20260420000006_meeting_thumbnail.sql 생성 및 Supabase MCP 적용 완료. git 커밋(c27d665)에서 실제 구현 확인됨.",
+      "completedAt": "2026-04-22T06:22:39.349Z"
     },
     {
-      "id": "93dc0a7f-5001-4c0d-8791-31f1cd87522b",
-      "name": "Task 008: Admin 이벤트 관리 UI 구현",
-      "description": "app/admin/events/page.tsx를 클라이언트 컴포넌트로 구현한다. 전체 모임 목록 테이블(제목/주최자/날짜/상태배지/참가인원/액션), 제목 기반 검색 입력, 상태 필터 드롭다운, 모임 수정 Dialog(React Hook Form + Zod), 강제 취소 확인 Dialog, 빈 상태 UI를 포함한다. lib/mock-data.ts에 getMockAdminMeetings() 함수를 추가한다.\n\n수락 기준:\n- 테이블에 MOCK_MEETINGS 전체 목록 표시\n- 제목 검색 시 실시간 필터링\n- 상태 필터(전체/예정/마감/취소) 드롭다운 동작\n- 모임 수정 Dialog 열림/닫힘 동작 (제출은 미구현)\n- 강제 취소 확인 Dialog 열림/닫힘 동작\n- 검색 결과 없을 때 빈 상태 메시지 표시",
-      "notes": "React Hook Form + Zod는 이미 설치됨. shadcn/ui Dialog, Select, Badge는 이미 설치됨. MeetingRow의 approval_type은 'auto'|'manual' union 타입 주의.",
+      "id": "be8be8f3-2c49-4d39-8089-785ff30a69d0",
+      "name": "Supabase Storage 버킷 + RLS 설정",
+      "description": "meeting-thumbnails 공개 버킷을 생성하고 RLS 정책(SELECT 전체 허용, INSERT 인증 사용자, DELETE 소유자)을 설정하는 마이그레이션을 적용한다.",
+      "notes": "버킷 public=true로 설정하여 CDN URL로 직접 접근 가능하게 함",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:22:41.550Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000007_storage_meeting_thumbnails.sql",
+          "type": "CREATE",
+          "description": "Storage 버킷 및 RLS 설정 마이그레이션"
+        }
+      ],
+      "implementationGuide": "1. supabase/migrations/20260420000007_storage_meeting_thumbnails.sql 생성\n2. storage.buckets에 meeting-thumbnails 버킷 INSERT (public=true)\n3. storage.objects RLS 정책:\n   - SELECT: 모두 허용 (bucket_id = 'meeting-thumbnails')\n   - INSERT: auth.uid() IS NOT NULL AND bucket_id = 'meeting-thumbnails'\n   - DELETE: auth.uid()::text = (storage.foldername(name))[1]\n4. mcp__supabase__apply_migration으로 적용",
+      "verificationCriteria": "Supabase 콘솔 Storage 탭에서 meeting-thumbnails 버킷이 public으로 존재하고 RLS 정책 3개가 설정되어 있는지 확인",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "meeting-thumbnails 공개 버킷 생성 및 RLS 정책 3개(SELECT 전체 허용, INSERT 인증 사용자, DELETE 소유자) 마이그레이션 적용 완료. public=true 설정으로 CDN URL 직접 접근 가능. git 커밋(c27d665)에서 구현 확인됨.",
+      "completedAt": "2026-04-22T06:22:41.548Z"
+    },
+    {
+      "id": "fc5af495-7ca8-4e27-b284-4e4229ccc36b",
+      "name": "타입 및 검증 스키마 업데이트",
+      "description": "MeetingRow 타입에 thumbnail_url 필드를 추가하고, Zod meetingSchema와 meetingUpdateSchema에 thumbnail_url 검증 규칙을 추가한다.",
       "status": "completed",
       "dependencies": [
         {
-          "taskId": "8bd5e94e-01b3-4023-9779-e81788c627d2"
+          "taskId": "0059cbaa-cb62-43bd-b354-dc58a251a9f0"
+        },
+        {
+          "taskId": "be8be8f3-2c49-4d39-8089-785ff30a69d0"
         }
       ],
-      "createdAt": "2026-04-20T02:13:33.036Z",
-      "updatedAt": "2026-04-20T02:23:23.447Z",
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:22:56.242Z",
       "relatedFiles": [
-        {
-          "path": "app/admin/events/page.tsx",
-          "type": "TO_MODIFY",
-          "description": "이벤트 관리 UI 전체 구현"
-        },
-        {
-          "path": "lib/mock-data.ts",
-          "type": "TO_MODIFY",
-          "description": "getMockAdminMeetings() 함수 추가"
-        },
-        {
-          "path": "types/domain.ts",
-          "type": "REFERENCE",
-          "description": "MeetingWithHost, MeetingStatus 타입 참조"
-        },
-        {
-          "path": "lib/validations/",
-          "type": "REFERENCE",
-          "description": "기존 Zod 스키마 패턴 참조"
-        }
-      ],
-      "implementationGuide": "1. lib/mock-data.ts에 getMockAdminMeetings() 추가 (MOCK_MEETINGS 기반, participationCount 포함)\n2. app/admin/events/page.tsx를 'use client'로 변경\n3. useState: searchQuery(string), statusFilter(string), editDialogMeeting(MeetingWithHost|null), cancelDialogMeeting(MeetingWithHost|null)\n4. useMemo로 filteredMeetings 계산 (searchQuery + statusFilter 적용)\n5. shadcn/ui Table + Badge(상태별 색상) + Button(수정/취소)\n6. EventEditDialog 컴포넌트: useForm+zodResolver, 제목/날짜/장소/최대인원/참가비 필드, 제출 시 console.log만\n7. EventCancelDialog 컴포넌트: shadcn/ui AlertDialog 패턴\n8. 빈 상태: filteredMeetings.length === 0 조건부 렌더링",
-      "verificationCriteria": "브라우저에서 /admin/events 접속 시: 1) 사이드바 '이벤트 관리' 하이라이트, 2) 모임 목록 테이블 표시, 3) 검색/필터 동작, 4) Dialog 열림 동작",
-      "analysisResult": "Phase 2 Admin UI/UX 완성 목표: 더미 데이터 기반으로 Admin 레이아웃 고도화 및 대시보드/이벤트관리/사용자관리/통계분석 4개 페이지 UI를 완성한다. 실제 DB 연동 없이 shadcn/ui 컴포넌트와 mock-data.ts 더미 데이터를 활용하며, 데스크톱 우선 레이아웃으로 구현한다. 기존 코드 패턴(서버/클라이언트 컴포넌트 분리, as const 타입, 4칸 들여쓰기, 한국어 UI)을 준수한다.",
-      "summary": "이벤트 관리 페이지 구현 완료. AdminMeetingRow 타입 + getMockAdminMeetings() 추가. 검색/상태필터(useMemo), 모임 테이블, EventEditDialog(RHF+Zod), EventCancelDialog, 빈 상태 UI 구현. 빌드 성공.",
-      "completedAt": "2026-04-20T02:23:23.441Z"
-    },
-    {
-      "id": "25724957-5cb9-49e1-b8d9-4dd7c845d667",
-      "name": "Task 009: Admin 사용자 관리 UI 구현",
-      "description": "types/database.ts에 AdminProfileRow 인터페이스를 추가한다. app/admin/users/page.tsx를 클라이언트 컴포넌트로 구현한다. 사용자 목록 테이블(아바타/이름/이메일/가입일/참여모임수/Admin권한토글/액션), is_admin 토글 Switch, 계정 비활성화 Dialog, 이름/이메일 검색을 포함한다.\n\n수락 기준:\n- 테이블에 MOCK_HOST + MOCK_MEMBERS 기반 사용자 목록 표시\n- is_admin 토글 Switch 클릭 시 로컬 상태 변경\n- 이름/이메일 검색 시 실시간 필터링\n- 계정 비활성화 확인 Dialog 열림/닫힘 동작",
-      "notes": "ProfileRow는 Tables<'profiles'>에서 추출된 타입. is_admin 컬럼이 현재 DB에 없으므로 AdminProfileRow는 별도 인터페이스로 정의. Switch 컴포넌트는 이미 설치됨.",
-      "status": "completed",
-      "dependencies": [
-        {
-          "taskId": "8bd5e94e-01b3-4023-9779-e81788c627d2"
-        }
-      ],
-      "createdAt": "2026-04-20T02:13:33.036Z",
-      "updatedAt": "2026-04-20T02:23:32.921Z",
-      "relatedFiles": [
-        {
-          "path": "app/admin/users/page.tsx",
-          "type": "TO_MODIFY",
-          "description": "사용자 관리 UI 전체 구현"
-        },
         {
           "path": "types/database.ts",
           "type": "TO_MODIFY",
-          "description": "AdminProfileRow 인터페이스 추가"
+          "description": "MeetingRow 타입에 thumbnail_url 추가"
         },
         {
-          "path": "lib/mock-data.ts",
+          "path": "lib/validations/meeting.ts",
           "type": "TO_MODIFY",
-          "description": "getMockAdminUsers() 함수 추가"
-        },
-        {
-          "path": "lib/supabase/database.types.ts",
-          "type": "REFERENCE",
-          "description": "ProfileRow 원본 타입 확인"
+          "description": "meetingSchema에 thumbnail_url 필드 추가"
         }
       ],
-      "implementationGuide": "1. types/database.ts에 AdminProfileRow 추가:\n   interface AdminProfileRow extends ProfileRow { is_admin: boolean; meeting_count: number; }\n   (ProfileRow가 Tables<'profiles'>이므로 is_admin이 없음 — 직접 추가)\n2. lib/mock-data.ts에 getMockAdminUsers(): AdminProfileRow[] 추가\n   (MOCK_HOST: is_admin=true, meeting_count=3 / MOCK_MEMBERS: is_admin=false, meeting_count 각각)\n3. app/admin/users/page.tsx를 'use client'로 변경\n4. useState: users(AdminProfileRow[]), searchQuery(string), deactivateTarget(AdminProfileRow|null)\n5. useMemo: filteredUsers (이름/이메일 검색)\n6. shadcn/ui Table + Avatar + Switch(is_admin 토글) + Button\n7. Switch onCheckedChange: setUsers로 해당 사용자 is_admin 업데이트\n8. UserDeactivateDialog: shadcn/ui AlertDialog",
-      "verificationCriteria": "브라우저에서 /admin/users 접속 시: 1) 사이드바 '사용자 관리' 하이라이트, 2) 사용자 목록 표시, 3) is_admin Switch 토글 동작, 4) 검색 필터링 동작",
-      "analysisResult": "Phase 2 Admin UI/UX 완성 목표: 더미 데이터 기반으로 Admin 레이아웃 고도화 및 대시보드/이벤트관리/사용자관리/통계분석 4개 페이지 UI를 완성한다. 실제 DB 연동 없이 shadcn/ui 컴포넌트와 mock-data.ts 더미 데이터를 활용하며, 데스크톱 우선 레이아웃으로 구현한다. 기존 코드 패턴(서버/클라이언트 컴포넌트 분리, as const 타입, 4칸 들여쓰기, 한국어 UI)을 준수한다.",
-      "summary": "AdminProfileRow 인터페이스 추가, getMockAdminUsers() 구현. 사용자 테이블(Avatar+이름+이메일), is_admin Switch 토글(로컬 상태), 이름/이메일 검색, UserDeactivateDialog 구현. 빌드 성공.",
-      "completedAt": "2026-04-20T02:23:32.918Z"
+      "implementationGuide": "1. types/database.ts의 MeetingRow 인터페이스에 thumbnail_url: string | null 추가\n2. lib/validations/meeting.ts의 meetingSchema에 thumbnail_url: z.string().url().nullable().optional() 추가\n3. meetingUpdateSchema에도 동일하게 추가\n4. MeetingFormValues 타입 자동 반영 확인",
+      "verificationCriteria": "TypeScript 컴파일 오류 없음. MeetingFormValues 타입에 thumbnail_url?: string | null 포함 확인",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "types/database.ts의 MeetingRow에 thumbnail_url: string | null 추가 완료. lib/validations/meeting.ts의 meetingSchema 및 meetingUpdateSchema에 thumbnail_url 검증 규칙 추가 완료. TypeScript 컴파일 오류 없음 확인. git 커밋(c27d665)에서 구현 확인됨.",
+      "completedAt": "2026-04-22T06:22:56.240Z"
     },
     {
-      "id": "427cab39-e3b8-4310-91de-0af6352dcf63",
-      "name": "Task 010: Admin 통계 분석 UI 구현",
-      "description": "shadcn/ui chart 컴포넌트를 설치하고 app/admin/stats/page.tsx를 클라이언트 컴포넌트로 구현한다. 기간 선택 탭(오늘/이번 주/이번 달/전체)과 차트 3종(Bar: 월별 신규 가입자, Line: 모임 생성/참가 신청 추이, Donut: 기능 이용률)을 구현한다. lib/mock-data.ts에 시계열 더미 데이터를 추가한다.\n\n수락 기준:\n- shadcn/ui chart 설치 완료\n- 기간 탭 전환 동작\n- Bar Chart: 월별 신규 가입자 수 표시\n- Line Chart: 모임 생성/참가 신청 건수 추이 표시\n- Donut(Pie) Chart: 기능 이용률(기본/카풀/정산) 표시\n- 기간 탭 변경 시 차트 데이터 변경",
-      "notes": "shadcn/ui chart는 내부적으로 recharts를 사용. chart 컴포넌트 설치 후 components/ui/chart.tsx 생성됨. 기간별 필터링은 클라이언트 사이드에서 더미 데이터 슬라이싱으로 구현.",
+      "id": "838fb27f-73d2-4a00-a9e1-8ed3df52cd32",
+      "name": "ImageUpload 컴포넌트 생성",
+      "description": "Supabase Storage에 이미지를 업로드하고 공개 URL을 반환하는 재사용 가능한 클라이언트 컴포넌트를 생성한다.",
+      "notes": "any 타입 사용 금지. 업로드 중 disabled 상태로 중복 클릭 방지. lucide-react의 Image 아이콘은 ImageIcon으로 import",
       "status": "completed",
       "dependencies": [
         {
-          "taskId": "8bd5e94e-01b3-4023-9779-e81788c627d2"
+          "taskId": "fc5af495-7ca8-4e27-b284-4e4229ccc36b"
         }
       ],
-      "createdAt": "2026-04-20T02:13:33.036Z",
-      "updatedAt": "2026-04-20T02:23:43.434Z",
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:23:05.395Z",
       "relatedFiles": [
         {
-          "path": "app/admin/stats/page.tsx",
-          "type": "TO_MODIFY",
-          "description": "통계 분석 UI 전체 구현"
-        },
-        {
-          "path": "lib/mock-data.ts",
-          "type": "TO_MODIFY",
-          "description": "차트 더미 데이터 추가 (MOCK_USER_GROWTH, MOCK_MEETING_TREND, MOCK_FEATURE_USAGE)"
-        },
-        {
-          "path": "components/ui/chart.tsx",
+          "path": "components/image-upload.tsx",
           "type": "CREATE",
-          "description": "shadcn/ui chart 설치로 자동 생성"
+          "description": "이미지 업로드 컴포넌트"
+        },
+        {
+          "path": "lib/supabase/client.ts",
+          "type": "DEPENDENCY",
+          "description": "Supabase 클라이언트"
         }
       ],
-      "implementationGuide": "1. npx shadcn@latest add chart 실행\n2. lib/mock-data.ts에 Admin 차트 더미 데이터 추가:\n   - MOCK_USER_GROWTH: { month: string, count: number }[] (최근 6개월)\n   - MOCK_MEETING_TREND: { month: string, created: number, joined: number }[] (최근 6개월)\n   - MOCK_FEATURE_USAGE: { name: string, value: number }[] (기본/카풀/정산)\n   - getMockStatsData(period: 'today'|'week'|'month'|'all'): 기간별 필터링 반환\n3. app/admin/stats/page.tsx를 'use client'로 변경\n4. useState: selectedPeriod('today'|'week'|'month'|'all')\n5. shadcn/ui Tabs로 기간 선택\n6. recharts (shadcn/ui chart 내부 사용) BarChart, LineChart, PieChart 구현\n7. ResponsiveContainer로 반응형 처리",
-      "verificationCriteria": "브라우저에서 /admin/stats 접속 시: 1) 사이드바 '통계 분석' 하이라이트, 2) 기간 탭 전환, 3) Bar/Line/Donut 차트 3종 렌더링",
-      "analysisResult": "Phase 2 Admin UI/UX 완성 목표: 더미 데이터 기반으로 Admin 레이아웃 고도화 및 대시보드/이벤트관리/사용자관리/통계분석 4개 페이지 UI를 완성한다. 실제 DB 연동 없이 shadcn/ui 컴포넌트와 mock-data.ts 더미 데이터를 활용하며, 데스크톱 우선 레이아웃으로 구현한다. 기존 코드 패턴(서버/클라이언트 컴포넌트 분리, as const 타입, 4칸 들여쓰기, 한국어 UI)을 준수한다.",
-      "summary": "shadcn/ui chart+tabs 설치, 차트 더미 데이터 3종(MOCK_USER_GROWTH/TREND/FEATURE_USAGE) 추가. 기간 Tabs, Bar Chart(월별가입자), Line Chart(생성/신청추이), Donut Chart(기능이용률) 구현. ChartContainer+recharts 활용. 빌드 성공.",
-      "completedAt": "2026-04-20T02:23:43.430Z"
+      "implementationGuide": "1. components/image-upload.tsx 신규 생성 ('use client')\n2. Props 타입:\n   interface ImageUploadProps {\n     value: string | null;\n     onChange: (url: string | null) => void;\n     disabled?: boolean;\n   }\n3. 내부 로직:\n   - input[type=file, accept='image/*'] 숨김 처리\n   - 파일 선택 시 5MB 초과 검증 (toast 오류)\n   - createClient()로 Supabase 클라이언트 생성\n   - 업로드 경로: {userId}/{Date.now()}-{file.name}\n   - storage.from('meeting-thumbnails').upload(path, file)\n   - getPublicUrl()로 URL 획득 후 onChange 호출\n4. UI:\n   - value 있으면: Next.js Image 컴포넌트로 미리보기 + 삭제 버튼(X)\n   - value 없으면: 점선 박스 + 이미지 아이콘 + '이미지 업로드' 텍스트\n5. lib/supabase/client.ts의 createClient() 사용",
+      "verificationCriteria": "이미지 선택 시 Supabase Storage에 업로드되고 공개 URL이 onChange로 전달됨. 5MB 초과 파일 선택 시 오류 메시지 표시. 삭제 버튼 클릭 시 onChange(null) 호출",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "components/image-upload.tsx 클라이언트 컴포넌트 생성 완료. ImageUploadProps 타입 정의, 5MB 초과 검증, Supabase Storage 업로드, 미리보기/삭제 UI 구현 완료. any 타입 미사용, ImageIcon으로 rename import 적용. git 커밋(a90adc8, c27d665)에서 구현 확인됨.",
+      "completedAt": "2026-04-22T06:23:05.392Z"
+    },
+    {
+      "id": "ccc92779-0fec-47a6-b170-33ed0c4f218b",
+      "name": "MeetingForm 수정 — 이미지 업로드 필드 추가",
+      "description": "모임 생성/수정 폼에 선택적 썸네일 이미지 업로드 기능을 추가한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "838fb27f-73d2-4a00-a9e1-8ed3df52cd32"
+        }
+      ],
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:23:18.315Z",
+      "relatedFiles": [
+        {
+          "path": "components/meeting-form.tsx",
+          "type": "TO_MODIFY",
+          "description": "이미지 업로드 필드 추가"
+        },
+        {
+          "path": "components/image-upload.tsx",
+          "type": "DEPENDENCY",
+          "description": "ImageUpload 컴포넌트"
+        }
+      ],
+      "implementationGuide": "1. components/meeting-form.tsx 수정\n2. useForm의 defaultValues에 thumbnail_url: null 추가\n3. 폼 상단에 FormField 추가:\n   <FormField name='thumbnail_url' control={form.control}\n     render={({ field }) => (\n       <FormItem>\n         <FormLabel>썸네일 이미지 (선택)</FormLabel>\n         <FormControl>\n           <ImageUpload value={field.value ?? null} onChange={field.onChange} />\n         </FormControl>\n       </FormItem>\n     )}\n   />\n4. onSubmit 핸들러에서 thumbnail_url 포함하여 DB 저장",
+      "verificationCriteria": "새 모임 생성 폼에 이미지 업로드 영역이 표시됨. 이미지 없이도 폼 제출 가능. 이미지 업로드 후 모임 생성 시 DB에 thumbnail_url 저장됨",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "components/meeting-form.tsx에 썸네일 이미지 업로드 FormField 추가 완료. defaultValues에 thumbnail_url: null 포함, ImageUpload 컴포넌트 연동, onSubmit 핸들러에서 thumbnail_url DB 저장 처리. 이미지 없이도 폼 제출 가능. git 커밋(c27d665)에서 구현 확인됨.",
+      "completedAt": "2026-04-22T06:23:18.313Z"
+    },
+    {
+      "id": "b16941dc-6d48-4e8f-b165-9df7603accd4",
+      "name": "MeetingCard 수정 — 썸네일 이미지 표시",
+      "description": "모임 카드 UI를 좌우 분할 레이아웃으로 변경하여 왼쪽에 썸네일 이미지(또는 플레이스홀더)를 표시한다.",
+      "notes": "lucide-react Image와 next/image Image 이름 충돌 주의 — ImageIcon으로 rename import",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "838fb27f-73d2-4a00-a9e1-8ed3df52cd32"
+        }
+      ],
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:23:20.281Z",
+      "relatedFiles": [
+        {
+          "path": "components/meeting-card.tsx",
+          "type": "TO_MODIFY",
+          "description": "썸네일 이미지 표시 레이아웃 추가"
+        }
+      ],
+      "implementationGuide": "1. components/meeting-card.tsx 수정\n2. MeetingCardProps에 thumbnail_url?: string | null 추가\n3. 카드 내부 레이아웃을 flex row로 변경:\n   <div className='flex gap-3'>\n     <div className='w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100'>\n       {thumbnail_url ? (\n         <Image src={thumbnail_url} alt={title} width={80} height={80} className='object-cover w-full h-full' />\n       ) : (\n         <div className='flex items-center justify-center w-full h-full text-gray-400'>\n           <ImageIcon size={24} />\n         </div>\n       )}\n     </div>\n     <div className='flex-1 min-w-0'>기존 내용</div>\n   </div>\n4. next/image의 Image 컴포넌트와 lucide-react의 ImageIcon 사용",
+      "verificationCriteria": "모임 목록에서 각 카드 왼쪽에 80×80px 썸네일 이미지 표시. 이미지 없을 때 회색 플레이스홀더와 아이콘 표시. 레이아웃 깨짐 없음",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "components/meeting-card.tsx 좌우 분할 레이아웃으로 변경 완료. 왼쪽 80×80px 썸네일 영역 추가, 이미지 없을 때 회색 플레이스홀더와 ImageIcon 표시. next/image와 lucide-react 이름 충돌 ImageIcon으로 해결. git 커밋(c27d665)에서 구현 확인됨.",
+      "completedAt": "2026-04-22T06:23:20.279Z"
+    },
+    {
+      "id": "a226c5fd-29a6-418f-9fb9-d9f51dc7f4af",
+      "name": "next.config 수정 + 관리자 페이지 이미지 표시",
+      "description": "Supabase Storage 도메인을 Next.js 이미지 허용 목록에 추가하고, 관리자 모임 목록 테이블에 썸네일 이미지 컬럼을 추가한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "ccc92779-0fec-47a6-b170-33ed0c4f218b"
+        },
+        {
+          "taskId": "b16941dc-6d48-4e8f-b165-9df7603accd4"
+        }
+      ],
+      "createdAt": "2026-04-20T10:00:28.008Z",
+      "updatedAt": "2026-04-22T06:23:31.629Z",
+      "relatedFiles": [
+        {
+          "path": "next.config.ts",
+          "type": "TO_MODIFY",
+          "description": "Supabase Storage 도메인 이미지 허용"
+        },
+        {
+          "path": "app/admin/events/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "썸네일 이미지 컬럼 추가"
+        }
+      ],
+      "implementationGuide": "1. next.config.ts 수정:\n   images: {\n     remotePatterns: [\n       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }\n     ]\n   }\n2. app/admin/events/page.tsx 수정:\n   - 테이블 헤더에 '이미지' 컬럼 추가\n   - 각 행에 thumbnail_url 있으면 <Image width={40} height={40} className='rounded object-cover' />\n   - 없으면 '-' 텍스트 표시\n3. 관리자 페이지에서 이미지 수정 기능은 추가하지 않음 (표시만)",
+      "verificationCriteria": "next/image로 Supabase Storage 이미지 로드 시 오류 없음. 관리자 모임 목록에서 썸네일 이미지가 표시됨. npm run build 오류 없음",
+      "analysisResult": "모임 목록 화면의 각 모임 카드에 썸네일 이미지를 추가하는 기능 구현. 이미지는 선택 사항이며 Supabase Storage(meeting-thumbnails 버킷)에 저장. DB 마이그레이션, Storage 설정, 이미지 업로드 컴포넌트, 폼/카드 UI 수정, 관리자 페이지 이미지 표시를 포함한 전체 스택 구현.",
+      "summary": "next.config.ts에 Supabase Storage CDN 도메인(*.supabase.co) remotePatterns 추가 완료. app/admin/events/page.tsx 이미지 컬럼 추가(있으면 미리보기, 없으면 플레이스홀더). npm run build 오류 없음. git 커밋(c27d665)에서 전체 구현 확인됨.",
+      "completedAt": "2026-04-22T06:23:31.619Z"
     }
   ]
 }

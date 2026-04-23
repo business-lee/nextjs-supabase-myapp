@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { type Database } from "@/lib/supabase/database.types";
-import { getMockUserMeetingStats } from "@/lib/mock-data";
 
 // 프로필 타입 별칭
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
@@ -45,7 +44,26 @@ export async function getMeetingStats(): Promise<{ created: number; joined: numb
         redirect("/auth/login");
     }
 
-    return getMockUserMeetingStats(claimsData.claims.sub);
+    const userId = claimsData.claims.sub;
+
+    const { count: createdCount } = await supabase
+        .from("meetings")
+        .select("*", { count: "exact", head: true })
+        .eq("host_id", userId)
+        .neq("status", "cancelled");
+
+    const { data: joinedData } = await supabase
+        .from("participations")
+        .select("meeting_id, meetings!inner(host_id)")
+        .eq("user_id", userId)
+        .eq("status", "approved");
+
+    const joinedCount = (joinedData ?? []).filter((p) => {
+        const m = p.meetings as { host_id: string };
+        return m.host_id !== userId;
+    }).length;
+
+    return { created: createdCount ?? 0, joined: joinedCount };
 }
 
 export async function updateProfile(

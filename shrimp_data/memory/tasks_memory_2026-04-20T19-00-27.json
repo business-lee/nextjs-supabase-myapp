@@ -1,0 +1,226 @@
+{
+  "tasks": [
+    {
+      "id": "6715f70a-95dc-4627-bdb5-aa69ee256613",
+      "name": "유틸리티 DB 함수 생성 및 마이그레이션 디렉토리 준비",
+      "description": "supabase/migrations/ 디렉토리를 생성하고, 공통으로 사용될 DB 유틸리티 함수 3개를 Supabase에 적용한다.\n\n생성할 함수:\n1. update_updated_at_column() - updated_at 자동 갱신 트리거 함수\n2. is_admin() SECURITY DEFINER STABLE - profiles 테이블 직접 조회로 Admin 여부 반환 (JWT 클레임 방식 사용 금지)\n3. generate_invite_token() - invite_token 자동 생성 트리거 함수 (선택적, meetings 트리거용)\n\n로컬에도 SQL 파일 저장: supabase/migrations/20260420000000_utility_functions.sql",
+      "notes": "is_admin()은 SECURITY DEFINER로 실행해야 RLS 순환 참조 문제를 방지할 수 있다. update_updated_at_column이 이미 존재할 수 있으므로 CREATE OR REPLACE 사용 필수.",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-04-20T09:16:51.357Z",
+      "updatedAt": "2026-04-20T09:21:21.195Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000000_utility_functions.sql",
+          "type": "CREATE",
+          "description": "유틸리티 함수 마이그레이션 SQL 파일"
+        },
+        {
+          "path": "lib/supabase/database.types.ts",
+          "type": "REFERENCE",
+          "description": "기존 DB 타입 구조 참조"
+        }
+      ],
+      "implementationGuide": "1. supabase/migrations/ 디렉토리 생성\n2. mcp__supabase__apply_migration으로 아래 SQL 적용:\n   - CREATE OR REPLACE FUNCTION public.update_updated_at_column() RETURNS TRIGGER LANGUAGE plpgsql\n   - CREATE OR REPLACE FUNCTION public.is_admin() RETURNS boolean LANGUAGE sql SECURITY DEFINER STABLE (SELECT EXISTS FROM profiles WHERE id=auth.uid() AND is_admin=true)\n3. 로컬 파일 저장: supabase/migrations/20260420000000_utility_functions.sql\n4. mcp__supabase__execute_sql로 함수 생성 확인:\n   SELECT routine_name FROM information_schema.routines WHERE routine_schema='public' AND routine_name IN ('update_updated_at_column','is_admin')",
+      "verificationCriteria": "mcp__supabase__execute_sql로 information_schema.routines 조회 시 update_updated_at_column, is_admin 함수가 public 스키마에 존재함을 확인",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "유틸리티 함수 2개(update_updated_at_column, is_admin) Supabase에 적용 완료. is_admin()은 SECURITY DEFINER STABLE로 profiles 직접 조회 방식으로 구현. 로컬 마이그레이션 파일 생성 완료. execute_sql 검증으로 두 함수 모두 public 스키마에 존재 확인.",
+      "completedAt": "2026-04-20T09:21:21.193Z"
+    },
+    {
+      "id": "cc7c962f-7711-48bf-ac43-5a4213c61dff",
+      "name": "meetings 및 notices 테이블 생성",
+      "description": "핵심 도메인 테이블인 meetings와 notices를 생성한다.\n\nmeetings 테이블 핵심 설계:\n- PK: uuid DEFAULT gen_random_uuid()\n- host_id: uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE\n- invite_token: text NOT NULL UNIQUE DEFAULT gen_random_uuid()::text\n- approval_type: text CHECK IN ('auto','manual') DEFAULT 'auto'\n- status: text CHECK IN ('upcoming','ongoing','closed','cancelled') DEFAULT 'upcoming'\n- carpool_enabled: boolean NOT NULL DEFAULT false\n- entry_fee: integer NOT NULL DEFAULT 0 CHECK >= 0\n- max_participants: integer CHECK > 0 (nullable)\n- updated_at 트리거 적용\n- 인덱스: host_id, invite_token, status, event_at\n\nnotices 테이블:\n- meeting_id FK → meetings.id ON DELETE CASCADE\n- author_id FK → profiles.id ON DELETE CASCADE\n- is_pinned: boolean DEFAULT false\n- updated_at 트리거 적용\n- 인덱스: meeting_id, is_pinned",
+      "notes": "enum 타입 금지 → CHECK 제약으로 구현. meetings는 이후 모든 테이블의 기반이 되므로 스키마를 정확하게 설계해야 한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "6715f70a-95dc-4627-bdb5-aa69ee256613"
+        }
+      ],
+      "createdAt": "2026-04-20T09:16:51.357Z",
+      "updatedAt": "2026-04-20T09:22:06.534Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000001_meetings_notices.sql",
+          "type": "CREATE",
+          "description": "meetings, notices 테이블 마이그레이션"
+        },
+        {
+          "path": "types/database.ts",
+          "type": "REFERENCE",
+          "description": "MeetingRow, NoticeRow 인터페이스 참조"
+        },
+        {
+          "path": "types/domain.ts",
+          "type": "REFERENCE",
+          "description": "APPROVAL_TYPE, MEETING_STATUS 상수 참조"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration으로 meetings 테이블 생성 SQL 적용\n2. meetings updated_at 트리거 생성 (update_updated_at_column 함수 활용)\n3. mcp__supabase__apply_migration으로 notices 테이블 생성 SQL 적용\n4. notices updated_at 트리거 생성\n5. 로컬 파일 저장: supabase/migrations/20260420000001_meetings_notices.sql\n6. mcp__supabase__execute_sql로 테이블 존재 확인:\n   SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename IN ('meetings','notices')",
+      "verificationCriteria": "pg_tables에서 meetings, notices 테이블 존재 확인. pg_indexes에서 meetings_invite_token_idx UNIQUE 인덱스 확인. pg_trigger에서 updated_at 트리거 확인.",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "meetings, notices 테이블 Supabase에 생성 완료. meetings에 invite_token UNIQUE 인덱스, host_id/status/event_at 인덱스 추가. CHECK 제약으로 approval_type, status 상태값 관리(enum 미사용). updated_at 트리거 양쪽 테이블 모두 적용. 로컬 마이그레이션 파일 저장 완료.",
+      "completedAt": "2026-04-20T09:22:06.530Z"
+    },
+    {
+      "id": "cf0a835f-0781-4d38-b736-cd4dc5bf438d",
+      "name": "participations 및 carpool 테이블 생성",
+      "description": "참가자 관리와 카풀 관련 테이블 3개를 생성한다.\n\nparticipations 테이블:\n- meeting_id FK → meetings.id ON DELETE CASCADE\n- user_id FK → profiles.id ON DELETE CASCADE\n- status: text CHECK IN ('pending','approved','rejected','waitlisted') DEFAULT 'pending'\n- waitlist_order: integer CHECK > 0 (nullable)\n- UNIQUE(meeting_id, user_id) — 중복 신청 방지\n- 부분 인덱스: (meeting_id, waitlist_order) WHERE waitlist_order IS NOT NULL\n\ncarpool_drivers 테이블:\n- meeting_id FK → meetings.id ON DELETE CASCADE\n- driver_id FK → profiles.id ON DELETE CASCADE\n- available_seats: integer CHECK 1~8\n- UNIQUE(meeting_id, driver_id)\n\ncarpool_passengers 테이블:\n- carpool_driver_id FK → carpool_drivers.id ON DELETE CASCADE\n- passenger_id FK → profiles.id ON DELETE CASCADE\n- status: text CHECK IN ('pending','accepted','rejected')\n- UNIQUE(carpool_driver_id, passenger_id)",
+      "notes": "participations의 UNIQUE(meeting_id, user_id)는 중복 신청을 DB 레벨에서 방지하는 핵심 제약이다. waitlist_order 부분 인덱스는 Task 013의 대기자 자동 승급 로직 성능에 중요하다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "cc7c962f-7711-48bf-ac43-5a4213c61dff"
+        }
+      ],
+      "createdAt": "2026-04-20T09:16:51.357Z",
+      "updatedAt": "2026-04-20T09:22:55.602Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000002_participations_carpool.sql",
+          "type": "CREATE",
+          "description": "participations, carpool 테이블 마이그레이션"
+        },
+        {
+          "path": "types/database.ts",
+          "type": "REFERENCE",
+          "description": "ParticipationRow, CarpoolDriverRow, CarpoolPassengerRow 참조"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration으로 participations 테이블 생성\n2. mcp__supabase__apply_migration으로 carpool_drivers 테이블 생성\n3. mcp__supabase__apply_migration으로 carpool_passengers 테이블 생성\n4. 로컬 파일 저장: supabase/migrations/20260420000002_participations_carpool.sql\n5. mcp__supabase__execute_sql로 확인:\n   SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename IN ('participations','carpool_drivers','carpool_passengers')",
+      "verificationCriteria": "3개 테이블 존재 확인. participations의 UNIQUE(meeting_id, user_id) 제약 확인. waitlist_order 부분 인덱스 확인. carpool_passengers의 UNIQUE(carpool_driver_id, passenger_id) 확인.",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "participations, carpool_drivers, carpool_passengers 3개 테이블 생성 완료. participations에 UNIQUE(meeting_id, user_id)로 중복 신청 방지, waitlist_order 부분 인덱스 생성. carpool_passengers에 UNIQUE(carpool_driver_id, passenger_id) 제약. 모든 상태값 CHECK 제약으로 관리. 로컬 마이그레이션 파일 저장 완료.",
+      "completedAt": "2026-04-20T09:22:55.595Z"
+    },
+    {
+      "id": "e854b43c-6b7a-4000-8c81-d951d9e66616",
+      "name": "settlements 관련 테이블 생성",
+      "description": "정산 관련 테이블 3개를 생성한다.\n\nsettlements 테이블:\n- meeting_id FK → meetings.id ON DELETE CASCADE\n- total_amount: integer NOT NULL CHECK > 0\n- split_type: text CHECK IN ('equal','manual') DEFAULT 'equal'\n- UNIQUE(meeting_id) — 모임당 정산 1개 제약\n- updated_at 트리거 적용\n\nsettlement_items 테이블:\n- settlement_id FK → settlements.id ON DELETE CASCADE\n- label: text NOT NULL\n- amount: integer NOT NULL CHECK > 0\n- 인덱스: settlement_id\n\nsettlement_participants 테이블:\n- settlement_id FK → settlements.id ON DELETE CASCADE\n- user_id FK → profiles.id ON DELETE CASCADE\n- amount_due: integer NOT NULL CHECK >= 0\n- is_paid: boolean NOT NULL DEFAULT false\n- paid_at: timestamptz (nullable)\n- UNIQUE(settlement_id, user_id)\n- 인덱스: settlement_id, user_id",
+      "notes": "settlements UNIQUE(meeting_id)는 모임당 정산 1개 비즈니스 규칙을 DB 레벨에서 강제한다. Task 016 정산 로직과 일치한다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "cf0a835f-0781-4d38-b736-cd4dc5bf438d"
+        }
+      ],
+      "createdAt": "2026-04-20T09:16:51.358Z",
+      "updatedAt": "2026-04-20T09:23:38.986Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000003_settlements.sql",
+          "type": "CREATE",
+          "description": "settlements 관련 테이블 마이그레이션"
+        },
+        {
+          "path": "types/database.ts",
+          "type": "REFERENCE",
+          "description": "SettlementRow, SettlementItemRow, SettlementParticipantRow 참조"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration으로 settlements 테이블 생성\n2. settlements updated_at 트리거 생성\n3. mcp__supabase__apply_migration으로 settlement_items 테이블 생성\n4. mcp__supabase__apply_migration으로 settlement_participants 테이블 생성\n5. 로컬 파일 저장: supabase/migrations/20260420000003_settlements.sql\n6. 확인: SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename IN ('settlements','settlement_items','settlement_participants')",
+      "verificationCriteria": "3개 테이블 존재 확인. settlements UNIQUE(meeting_id) 제약 확인. settlement_participants UNIQUE(settlement_id, user_id) 확인. settlements updated_at 트리거 확인.",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "settlements, settlement_items, settlement_participants 3개 테이블 생성 완료. settlements에 UNIQUE(meeting_id)로 모임당 정산 1개 제약, updated_at 트리거 적용. settlement_participants에 UNIQUE(settlement_id, user_id), 인덱스 생성. 로컬 마이그레이션 파일 저장 완료.",
+      "completedAt": "2026-04-20T09:23:38.983Z"
+    },
+    {
+      "id": "edc4054c-7931-484b-8ab6-35a4942f186b",
+      "name": "전체 테이블 RLS 활성화 및 meetings RLS 정책 적용",
+      "description": "8개 신규 테이블의 RLS를 활성화하고 meetings 테이블의 RLS 정책을 적용한다.\n\nmeetings RLS 정책:\n- anon 포함 SELECT 전체 허용 (비로그인 초대 링크 F005 요구사항)\n- 인증 사용자 SELECT 허용\n- host_id = auth.uid() 기준 INSERT/UPDATE/DELETE\n- is_admin() 함수로 Admin 전체 접근\n\n핵심 결정:\n- meetings는 비로그인 사용자도 invite_token으로 조회해야 하므로 anon role SELECT 허용\n- Admin 정책은 is_admin() DB 함수 사용 (JWT 방식 X)",
+      "notes": "meetings는 비로그인 초대 링크 접근(F005)을 위해 anon SELECT를 허용해야 한다. Admin 정책이 host 정책과 중복될 수 있으나 OR 조건으로 통합 가능하다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "e854b43c-6b7a-4000-8c81-d951d9e66616"
+        }
+      ],
+      "createdAt": "2026-04-20T09:16:51.358Z",
+      "updatedAt": "2026-04-20T09:24:16.986Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000004_rls_meetings.sql",
+          "type": "CREATE",
+          "description": "meetings RLS 정책 마이그레이션"
+        },
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "REFERENCE",
+          "description": "isPublicPath 설정 참조 (admin, invite 예외 확인)"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration으로 8개 테이블 RLS 활성화:\n   ALTER TABLE public.meetings ENABLE ROW LEVEL SECURITY; (8개 반복)\n2. meetings RLS 정책 적용:\n   - CREATE POLICY meetings_anon_select FOR SELECT TO anon USING (true)\n   - CREATE POLICY meetings_auth_select FOR SELECT TO authenticated USING (true)\n   - CREATE POLICY meetings_host_insert FOR INSERT WITH CHECK (host_id = auth.uid())\n   - CREATE POLICY meetings_host_update FOR UPDATE USING (host_id = auth.uid())\n   - CREATE POLICY meetings_host_delete FOR DELETE USING (host_id = auth.uid())\n   - CREATE POLICY meetings_admin_all FOR ALL USING (public.is_admin())\n3. 로컬 파일: supabase/migrations/20260420000004_rls_meetings.sql\n4. 확인: SELECT tablename FROM pg_tables WHERE schemaname='public' AND rowsecurity=true",
+      "verificationCriteria": "pg_tables에서 8개 테이블 rowsecurity=true 확인. pg_policies에서 meetings 테이블의 정책 목록 확인 (anon select, host insert/update/delete, admin all 포함).",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "8개 테이블 RLS 모두 활성화 완료. meetings에 6개 정책 적용: anon SELECT(초대링크 비로그인 F005), authenticated SELECT, host INSERT/UPDATE/DELETE, admin ALL(is_admin() 함수). 로컬 마이그레이션 파일 저장 완료.",
+      "completedAt": "2026-04-20T09:24:16.983Z"
+    },
+    {
+      "id": "45f3e3a4-4163-4a2c-83c0-fa8663782c6c",
+      "name": "participations, notices, carpool, settlements RLS 정책 적용",
+      "description": "나머지 7개 테이블의 RLS 정책을 적용한다.\n\nparticipations:\n- 본인 행 INSERT/UPDATE, 주최자 모임 전체 SELECT/UPDATE\n\nnotices:\n- 주최자 CRUD, approved 참여자 SELECT\n\ncarpool_drivers:\n- approved 참여자 INSERT/SELECT, 본인 UPDATE/DELETE, 주최자 SELECT\n\ncarpool_passengers:\n- 드라이버 UPDATE(수락/거절), 본인 INSERT/DELETE, 드라이버+본인 SELECT\n\nsettlements, settlement_items:\n- 주최자 CRUD, approved 참여자 SELECT\n\nsettlement_participants:\n- 주최자 전체, 본인 SELECT/UPDATE(납부 체크)\n\n모든 테이블에 is_admin() 기반 Admin 전체 접근 정책 추가",
+      "notes": "notices, carpool, settlements의 approved 참여자 체크는 participations 테이블을 EXISTS 서브쿼리로 조인한다. 성능을 위해 participations의 인덱스(meeting_id, user_id, status)가 중요하다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "edc4054c-7931-484b-8ab6-35a4942f186b"
+        }
+      ],
+      "createdAt": "2026-04-20T09:16:51.358Z",
+      "updatedAt": "2026-04-20T09:25:46.933Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/20260420000005_rls_others.sql",
+          "type": "CREATE",
+          "description": "나머지 7개 테이블 RLS 정책 마이그레이션"
+        }
+      ],
+      "implementationGuide": "1. participations RLS 정책 적용 (본인 insert/update, 주최자 select/update, admin all)\n2. notices RLS 정책 적용 (주최자 all, approved 참여자 select, admin all)\n   - approved 참여자 판별: EXISTS(SELECT 1 FROM participations WHERE meeting_id=notices.meeting_id AND user_id=auth.uid() AND status='approved')\n3. carpool_drivers RLS 정책 적용\n4. carpool_passengers RLS 정책 적용\n5. settlements, settlement_items, settlement_participants RLS 정책 적용\n6. 로컬 파일: supabase/migrations/20260420000005_rls_others.sql\n7. 확인: SELECT tablename, policyname FROM pg_policies WHERE schemaname='public' ORDER BY tablename",
+      "verificationCriteria": "pg_policies에서 7개 테이블 정책 존재 확인. 각 테이블별 예상 정책 수 충족 확인. Admin 정책이 모든 테이블에 존재함을 확인.",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "7개 테이블 RLS 정책 적용 완료. participations(6개), notices(3개), carpool_drivers(5개), carpool_passengers(5개), settlements(3개), settlement_items(3개), settlement_participants(4개). 모든 테이블에 admin_all 정책 포함. approved 참여자 체크는 participations 서브쿼리 EXISTS로 구현. 로컬 마이그레이션 파일 저장 완료.",
+      "completedAt": "2026-04-20T09:25:46.931Z"
+    },
+    {
+      "id": "78bea1df-73a9-4002-98a8-ec5a46074376",
+      "name": "TypeScript 타입 자동 생성 및 코드 업데이트",
+      "description": "마이그레이션 완료 후 Supabase에서 TypeScript 타입을 자동 생성하여 코드에 반영한다.\n\n변경 파일:\n1. lib/supabase/database.types.ts: 자동 생성된 타입으로 전체 교체\n2. types/database.ts: 수동 인터페이스를 Tables<> 타입 별칭으로 교체\n   - MeetingRow = Tables<'meetings'>\n   - NoticeRow = Tables<'notices'>\n   - ParticipationRow = Tables<'participations'>\n   - CarpoolDriverRow = Tables<'carpool_drivers'>\n   - CarpoolPassengerRow = Tables<'carpool_passengers'>\n   - SettlementRow = Tables<'settlements'>\n   - SettlementItemRow = Tables<'settlement_items'>\n   - SettlementParticipantRow = Tables<'settlement_participants'>\n   - AdminProfileRow는 집계 타입이므로 인터페이스 유지\n   - ProfileRow = Tables<'profiles'> 유지",
+      "notes": "자동 생성된 타입의 status, approval_type 등은 string 타입으로 생성된다. types/domain.ts의 union 타입(ApprovalType, MeetingStatus 등)으로 타입 좁히기는 API 레이어에서 처리하므로 문제없다. database.types.ts 교체 후 types/database.ts 수정 순서를 지켜야 TypeScript 빌드 에러를 방지할 수 있다.",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "45f3e3a4-4163-4a2c-83c0-fa8663782c6c"
+        }
+      ],
+      "createdAt": "2026-04-20T09:16:51.358Z",
+      "updatedAt": "2026-04-20T09:27:51.613Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/database.types.ts",
+          "type": "TO_MODIFY",
+          "description": "자동 생성 타입으로 전체 교체",
+          "lineStart": 1,
+          "lineEnd": 204
+        },
+        {
+          "path": "types/database.ts",
+          "type": "TO_MODIFY",
+          "description": "인터페이스를 Tables<> 타입 별칭으로 교체",
+          "lineStart": 1,
+          "lineEnd": 111
+        },
+        {
+          "path": "types/domain.ts",
+          "type": "REFERENCE",
+          "description": "MeetingWithHost 등 조인 타입 영향 확인"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__generate_typescript_types 실행\n2. 생성된 타입을 lib/supabase/database.types.ts에 전체 교체\n3. types/database.ts 수정:\n   - 기존 interface MeetingRow {...} 를 export type MeetingRow = Tables<'meetings'>로 교체\n   - NoticeRow, ParticipationRow 등 동일 패턴으로 교체\n   - AdminProfileRow 인터페이스는 유지\n4. 빌드 확인: npm run build 또는 타입 체크",
+      "verificationCriteria": "npm run build 성공 (타입 에러 없음). types/database.ts에서 MeetingRow 등이 Tables<> 타입 별칭으로 정의됨. database.types.ts에 meetings, notices 등 8개 신규 테이블 타입 포함됨.",
+      "analysisResult": "Task 011은 Supabase DB 마이그레이션 및 RLS 정책 적용으로, Phase 3 전체 API 연동(Task 012~016)의 필수 선행 작업이다. Supabase MCP 도구(apply_migration, execute_sql, generate_typescript_types)를 활용하여 8개 신규 테이블 생성, RLS 정책 적용, TypeScript 타입 자동 생성 교체를 수행한다. enum 금지 정책에 따라 CHECK 제약으로 상태값을 관리하며, Admin 접근은 SECURITY DEFINER 함수로 구현한다.",
+      "summary": "generate_typescript_types로 8개 신규 테이블 포함 최신 타입 생성. lib/supabase/database.types.ts 전체 교체 완료. types/database.ts의 수동 인터페이스 8개를 Tables<> 타입 별칭으로 교체. AdminProfileRow 집계 타입 인터페이스 유지. npx tsc --noEmit 실행 결과 타입 오류 없음.",
+      "completedAt": "2026-04-20T09:27:51.610Z"
+    }
+  ]
+}

@@ -74,8 +74,9 @@ export type SettlementSplitType =
 // ─────────────────────────────────────────────
 
 // 호스트 프로필을 포함한 모임 타입
+// profiles RLS에 따라 join 결과가 null일 수 있음
 export type MeetingWithHost = MeetingRow & {
-    host: ProfileRow;
+    host: ProfileRow | null;
 };
 
 // 사용자 프로필을 포함한 참가 신청 타입
@@ -104,5 +105,7 @@ export interface MeetingCardData {
     status: MeetingStatus;
     host_name: string | null;
     participant_count: number;
+    pending_count: number;
     days_until_event: number;
+    thumbnail_url?: string | null;
 }

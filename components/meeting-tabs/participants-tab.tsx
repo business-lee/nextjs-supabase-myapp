@@ -2,13 +2,10 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-    MOCK_PARTICIPATIONS,
-    getMockParticipationStats,
-    MOCK_CURRENT_USER_ID,
-} from "@/lib/mock-data";
+import { approveParticipationAction, rejectParticipationAction } from "@/lib/actions/participation";
 import type { ParticipationWithUser } from "@/types/domain";
 import { PARTICIPATION_STATUS } from "@/types/domain";
+import type { ProfileRow } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +15,9 @@ import { Check, X } from "lucide-react";
 interface ParticipantsTabProps {
     meetingId: string;
     isHost: boolean;
+    currentUserId: string;
+    initialParticipations: ParticipationWithUser[];
+    hostProfile: ProfileRow | null;
 }
 
 // 상태 배지 스타일
@@ -46,10 +46,15 @@ function getInitials(name: string | null): string {
     return name.charAt(0).toUpperCase();
 }
 
-export function ParticipantsTab({ meetingId, isHost }: ParticipantsTabProps) {
-    const [participations, setParticipations] = useState<ParticipationWithUser[]>(
-        MOCK_PARTICIPATIONS.filter((p) => p.meeting_id === meetingId),
-    );
+export function ParticipantsTab({
+    meetingId,
+    isHost,
+    currentUserId,
+    initialParticipations,
+    hostProfile,
+}: ParticipantsTabProps) {
+    const [participations, setParticipations] =
+        useState<ParticipationWithUser[]>(initialParticipations);
 
     const stats = {
         approved: participations.filter((p) => p.status === PARTICIPATION_STATUS.APPROVED).length,
@@ -57,46 +62,81 @@ export function ParticipantsTab({ meetingId, isHost }: ParticipantsTabProps) {
         rejected: participations.filter((p) => p.status === PARTICIPATION_STATUS.REJECTED).length,
     };
 
-    function handleApprove(id: string) {
+    async function handleApprove(id: string) {
+        const result = await approveParticipationAction(id);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setParticipations((prev) =>
             prev.map((p) => (p.id === id ? { ...p, status: PARTICIPATION_STATUS.APPROVED } : p)),
         );
         toast.success("참가 신청을 승인했습니다.");
     }
 
-    function handleReject(id: string) {
+    async function handleReject(participationId: string) {
+        const result = await rejectParticipationAction(participationId, meetingId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setParticipations((prev) =>
-            prev.map((p) => (p.id === id ? { ...p, status: PARTICIPATION_STATUS.REJECTED } : p)),
+            prev.map((p) =>
+                p.id === participationId ? { ...p, status: PARTICIPATION_STATUS.REJECTED } : p,
+            ),
         );
         toast.success("참가 신청을 거절했습니다.");
     }
 
     if (!isHost) {
-        // 참여자 뷰: 본인 상태만 표시
-        const myParticipation = participations.find((p) => p.user_id === MOCK_CURRENT_USER_ID);
+        // 참여자 뷰: 주최자 카드 + 본인 상태 표시
+        const myParticipation = participations.find((p) => p.user_id === currentUserId);
         return (
-            <div className="flex flex-col gap-4">
-                <div className="rounded-lg border p-4">
-                    <p className="text-muted-foreground mb-2 text-sm">내 참가 상태</p>
-                    {myParticipation ? (
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9">
+            <div className="flex flex-col gap-3">
+                {/* 주최자 카드 */}
+                {hostProfile && (
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <Avatar className="h-9 w-9 shrink-0">
+                                <AvatarFallback>
+                                    {getInitials(hostProfile.full_name)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-1 flex-col gap-0.5">
+                                <span className="font-medium">
+                                    {hostProfile.full_name ?? "주최자"}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                    {hostProfile.email}
+                                </span>
+                            </div>
+                            <Badge className="bg-purple-500 text-white hover:bg-purple-600">
+                                주최자
+                            </Badge>
+                        </CardContent>
+                    </Card>
+                )}
+                {/* 내 참가 상태 */}
+                {myParticipation && (
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <Avatar className="h-9 w-9 shrink-0">
                                 <AvatarFallback>
                                     {getInitials(myParticipation.user.full_name)}
                                 </AvatarFallback>
                             </Avatar>
-                            <div>
-                                <p className="font-medium">{myParticipation.user.full_name}</p>
-                                <StatusBadge
-                                    status={myParticipation.status}
-                                    waitlistOrder={myParticipation.waitlist_order}
-                                />
+                            <div className="flex flex-1 flex-col gap-0.5">
+                                <span className="font-medium">
+                                    {myParticipation.user.full_name}
+                                </span>
                             </div>
-                        </div>
-                    ) : (
-                        <p className="text-muted-foreground text-sm">참가 신청 내역이 없습니다.</p>
-                    )}
-                </div>
+                            <StatusBadge
+                                status={myParticipation.status}
+                                waitlistOrder={myParticipation.waitlist_order}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         );
     }
@@ -114,6 +154,29 @@ export function ParticipantsTab({ meetingId, isHost }: ParticipantsTabProps) {
 
             {/* 신청자 목록 */}
             <div className="flex flex-col gap-3">
+                {/* 주최자 카드 — 항상 상단 고정 */}
+                {hostProfile && (
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <Avatar className="h-9 w-9 shrink-0">
+                                <AvatarFallback>
+                                    {getInitials(hostProfile.full_name)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-1 flex-col gap-0.5">
+                                <span className="font-medium">
+                                    {hostProfile.full_name ?? "주최자"}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                    {hostProfile.email}
+                                </span>
+                            </div>
+                            <Badge className="bg-purple-500 text-white hover:bg-purple-600">
+                                주최자
+                            </Badge>
+                        </CardContent>
+                    </Card>
+                )}
                 {participations.length === 0 ? (
                     <p className="text-muted-foreground py-10 text-center text-sm">
                         참가 신청자가 없습니다.

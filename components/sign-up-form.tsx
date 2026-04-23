@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
     const [email, setEmail] = useState("");
@@ -32,7 +33,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
         }
 
         try {
-            const { error } = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -40,9 +41,15 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 },
             });
             if (error) throw error;
+            if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+                setError("이미 가입된 이메일 주소입니다. 로그인을 시도해주세요.");
+                return;
+            }
             router.push("/auth/sign-up-success");
         } catch (error: unknown) {
-            setError(error instanceof Error ? error.message : "An error occurred");
+            setError(
+                translateAuthError(error instanceof Error ? error.message : "An error occurred"),
+            );
         } finally {
             setIsLoading(false);
         }
@@ -62,7 +69,9 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
             });
             if (error) throw error;
         } catch (error: unknown) {
-            setError(error instanceof Error ? error.message : "An error occurred");
+            setError(
+                translateAuthError(error instanceof Error ? error.message : "An error occurred"),
+            );
             setIsGoogleLoading(false);
         }
     };

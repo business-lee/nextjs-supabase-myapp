@@ -9,14 +9,21 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { translateAuthError } from "@/lib/auth-errors";
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
+    redirectTo?: string;
+}
+
+export function LoginForm({ className, redirectTo, ...props }: LoginFormProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const router = useRouter();
+
+    const safeRedirect = redirectTo?.startsWith("/") ? redirectTo : "/protected";
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,10 +37,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 password,
             });
             if (error) throw error;
-            // Update this route to redirect to an authenticated route. The user already has an active session.
-            router.push("/protected");
+            router.push(safeRedirect);
         } catch (error: unknown) {
-            setError(error instanceof Error ? error.message : "An error occurred");
+            setError(
+                translateAuthError(error instanceof Error ? error.message : "An error occurred"),
+            );
         } finally {
             setIsLoading(false);
         }
@@ -53,7 +61,9 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             });
             if (error) throw error;
         } catch (error: unknown) {
-            setError(error instanceof Error ? error.message : "An error occurred");
+            setError(
+                translateAuthError(error instanceof Error ? error.message : "An error occurred"),
+            );
             setIsGoogleLoading(false);
         }
     };

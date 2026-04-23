@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { MOCK_CARPOOL_DRIVERS } from "@/lib/mock-data";
+import {
+    toggleCarpoolAction,
+    registerDriverAction,
+    applyPassengerAction,
+    acceptPassengerAction,
+    rejectPassengerAction,
+} from "@/lib/actions/carpool";
 import type { CarpoolDriverWithPassengers } from "@/types/domain";
 import { CARPOOL_PASSENGER_STATUS } from "@/types/domain";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,6 +30,9 @@ import { Car, Check, MapPin, Users, X } from "lucide-react";
 interface CarpoolTabProps {
     meetingId: string;
     isHost: boolean;
+    currentUserId: string;
+    initialCarpoolEnabled: boolean;
+    initialCarpoolDrivers: CarpoolDriverWithPassengers[];
 }
 
 function getInitials(name: string | null): string {
@@ -106,50 +115,58 @@ function DriverRegisterDialog({
     );
 }
 
-export function CarpoolTab({ meetingId, isHost }: CarpoolTabProps) {
-    const [carpoolEnabled, setCarpoolEnabled] = useState(true);
-    const [drivers, setDrivers] = useState<CarpoolDriverWithPassengers[]>(
-        MOCK_CARPOOL_DRIVERS.filter((d) => d.meeting_id === meetingId),
-    );
+export function CarpoolTab({
+    meetingId,
+    isHost,
+    currentUserId,
+    initialCarpoolEnabled,
+    initialCarpoolDrivers,
+}: CarpoolTabProps) {
+    // DB의 carpool_enabled 값으로 초기화 (하드코딩 제거)
+    const [carpoolEnabled, setCarpoolEnabled] = useState(initialCarpoolEnabled);
+    // 서버에서 pre-fetch한 드라이버 목록으로 초기화 (MOCK 제거)
+    const [drivers, setDrivers] = useState<CarpoolDriverWithPassengers[]>(initialCarpoolDrivers);
     const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
 
-    function handleToggleCarpoolEnabled(enabled: boolean) {
+    // 카풀 활성화/비활성화 토글 — DB 연동
+    async function handleToggleCarpoolEnabled(enabled: boolean) {
+        const result = await toggleCarpoolAction(meetingId, enabled);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setCarpoolEnabled(enabled);
         toast.success(enabled ? "카풀이 활성화되었습니다." : "카풀이 비활성화되었습니다.");
     }
 
-    function handleRegisterDriver(location: string, seats: number, departureAt: string) {
-        const newDriver: CarpoolDriverWithPassengers = {
-            id: `driver-${Date.now()}`,
-            meeting_id: meetingId,
-            driver_id: "host-001",
-            departure_location: location,
-            departure_at: departureAt || new Date().toISOString(),
-            available_seats: seats,
-            created_at: new Date().toISOString(),
-            driver: {
-                id: "host-001",
-                email: "host@example.com",
-                full_name: "김주최",
-                avatar_url: null,
-                bio: null,
-                website: null,
-                is_admin: false,
-                created_at: "",
-                updated_at: "",
-            },
-            passengers: [],
-        };
-        setDrivers((prev) => [...prev, newDriver]);
+    // 드라이버 등록 — DB 연동
+    async function handleRegisterDriver(location: string, seats: number, departureAt: string) {
+        const result = await registerDriverAction(meetingId, location, seats, departureAt);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
+        setDrivers((prev) => [...prev, result.data]);
         toast.success("드라이버로 등록되었습니다.");
     }
 
-    function handleApplyPassenger(driverId: string) {
+    // 동승 신청 — DB 연동
+    async function handleApplyPassenger(driverId: string) {
+        const result = await applyPassengerAction(driverId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         toast.success("동승 신청이 완료되었습니다. 드라이버의 수락을 기다려주세요.");
-        console.log("동승 신청 드라이버 ID:", driverId);
     }
 
-    function handleAcceptPassenger(driverId: string, passengerId: string) {
+    // 동승 신청 수락 — DB 연동
+    async function handleAcceptPassenger(driverId: string, passengerId: string) {
+        const result = await acceptPassengerAction(passengerId, meetingId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setDrivers((prev) =>
             prev.map((d) =>
                 d.id === driverId
@@ -167,14 +184,17 @@ export function CarpoolTab({ meetingId, isHost }: CarpoolTabProps) {
         toast.success("동승 신청을 수락했습니다.");
     }
 
-    function handleRejectPassenger(driverId: string, passengerId: string) {
+    // 동승 신청 거절 — DB 연동 (레코드 삭제)
+    async function handleRejectPassenger(driverId: string, passengerId: string) {
+        const result = await rejectPassengerAction(passengerId, meetingId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
         setDrivers((prev) =>
             prev.map((d) =>
                 d.id === driverId
-                    ? {
-                          ...d,
-                          passengers: d.passengers.filter((p) => p.id !== passengerId),
-                      }
+                    ? { ...d, passengers: d.passengers.filter((p) => p.id !== passengerId) }
                     : d,
             ),
         );
@@ -242,8 +262,8 @@ export function CarpoolTab({ meetingId, isHost }: CarpoolTabProps) {
                                             <span>{formatTime(driver.departure_at)} 출발</span>
                                         </div>
 
-                                        {/* 동승 신청 버튼 (본인이 드라이버가 아닌 경우) */}
-                                        {driver.driver_id !== "host-001" && (
+                                        {/* 동승 신청 버튼 — 본인이 드라이버가 아닌 경우만 표시 */}
+                                        {driver.driver_id !== currentUserId && (
                                             <Button
                                                 size="sm"
                                                 variant="outline"

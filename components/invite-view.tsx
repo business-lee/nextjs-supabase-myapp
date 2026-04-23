@@ -3,15 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { applyParticipationAction } from "@/lib/actions/participation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, MapPin, Users } from "lucide-react";
-import type { MeetingRow } from "@/types/database";
+import type { MeetingWithHost } from "@/types/domain";
 import type { ParticipationStatus } from "@/types/domain";
 
 interface InviteViewProps {
-    meeting: MeetingRow;
+    meeting: MeetingWithHost;
     isLoggedIn: boolean;
     token: string;
     isHost: boolean;
@@ -58,17 +59,26 @@ export function InviteView({
     const [participationStatus, setParticipationStatus] = useState<ParticipationStatus | null>(
         initialParticipationStatus,
     );
+    const [applying, setApplying] = useState(false);
 
-    function handleApply() {
-        // approval_type에 따라 즉시 승인 또는 대기 상태 결정
-        const newStatus: ParticipationStatus =
-            meeting.approval_type === "auto" ? "approved" : "pending";
-        setParticipationStatus(newStatus);
-
-        if (newStatus === "approved") {
-            toast.success("참가 신청이 완료되었습니다. 바로 승인되었습니다!");
-        } else {
-            toast.success("참가 신청이 완료되었습니다. 주최자의 승인을 기다려주세요.");
+    async function handleApply() {
+        setApplying(true);
+        try {
+            const result = await applyParticipationAction(meeting.id);
+            if (!result.success) {
+                toast.error(result.error);
+                return;
+            }
+            setParticipationStatus(result.data.status);
+            if (result.data.status === "approved") {
+                toast.success("참가 신청이 완료되었습니다. 바로 승인되었습니다!");
+            } else if (result.data.status === "waitlisted") {
+                toast.success("참가 신청이 완료되었습니다. 대기자 명단에 등록되었습니다.");
+            } else {
+                toast.success("참가 신청이 완료되었습니다. 주최자의 승인을 기다려주세요.");
+            }
+        } finally {
+            setApplying(false);
         }
     }
 
@@ -162,8 +172,8 @@ export function InviteView({
             ) : (
                 // 로그인 + 미신청: 신청 버튼
                 <div className="flex flex-col gap-3">
-                    <Button size="lg" onClick={handleApply}>
-                        참가 신청
+                    <Button size="lg" onClick={handleApply} disabled={applying}>
+                        {applying ? "신청 중..." : "참가 신청"}
                     </Button>
                     <p className="text-muted-foreground text-center text-xs">
                         {meeting.approval_type === "auto"

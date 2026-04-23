@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { MOCK_NOTICES } from "@/lib/mock-data";
+import { createNoticeAction, updateNoticeAction, deleteNoticeAction } from "@/lib/actions/notice";
 import type { NoticeRow } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,16 @@ import { Pencil, Pin, Trash2 } from "lucide-react";
 interface NoticesTabProps {
     meetingId: string;
     isHost: boolean;
+    initialNotices: NoticeRow[];
+}
+
+// 공지 정렬 함수: 고정 공지 우선, 이후 최신순
+function sortNotices(notices: NoticeRow[]): NoticeRow[] {
+    return [...notices].sort((a, b) => {
+        if (a.is_pinned && !b.is_pinned) return -1;
+        if (!a.is_pinned && b.is_pinned) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 }
 
 // 공지 작성/수정 다이얼로그
@@ -35,18 +45,18 @@ function NoticeDialog({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     initialData?: Partial<NoticeRow>;
-    onSave: (title: string, content: string, isPinned: boolean) => void;
+    onSave: (title: string, content: string, isPinned: boolean) => void | Promise<void>;
 }) {
     const [title, setTitle] = useState(initialData?.title ?? "");
     const [content, setContent] = useState(initialData?.content ?? "");
     const [isPinned, setIsPinned] = useState(initialData?.is_pinned ?? false);
 
-    function handleSave() {
+    async function handleSave() {
         if (!title.trim()) {
             toast.error("공지 제목을 입력해주세요.");
             return;
         }
-        onSave(title, content, isPinned);
+        await onSave(title, content, isPinned);
         onOpenChange(false);
     }
 
@@ -99,15 +109,9 @@ function NoticeDialog({
     );
 }
 
-export function NoticesTab({ meetingId: _meetingId, isHost }: NoticesTabProps) {
-    const [notices, setNotices] = useState<NoticeRow[]>(
-        // 고정 공지를 최상단으로 정렬
-        [...MOCK_NOTICES].sort((a, b) => {
-            if (a.is_pinned && !b.is_pinned) return -1;
-            if (!a.is_pinned && b.is_pinned) return 1;
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        }),
-    );
+export function NoticesTab({ meetingId, isHost, initialNotices }: NoticesTabProps) {
+    // 서버에서 pre-fetch된 초기 데이터로 상태 초기화 (고정 공지 우선 정렬)
+    const [notices, setNotices] = useState<NoticeRow[]>(sortNotices(initialNotices));
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<NoticeRow | undefined>(undefined);
@@ -122,46 +126,49 @@ export function NoticesTab({ meetingId: _meetingId, isHost }: NoticesTabProps) {
         setDialogOpen(true);
     }
 
-    function handleSave(title: string, content: string, isPinned: boolean) {
+    function handleDialogOpenChange(open: boolean) {
+        setDialogOpen(open);
+        if (!open) setEditTarget(undefined);
+    }
+
+    async function handleSave(title: string, content: string, isPinned: boolean) {
         if (editTarget) {
-            // 수정 더미 처리
+            // 기존 공지 수정 — Server Action 호출
+            const result = await updateNoticeAction(
+                editTarget.id,
+                meetingId,
+                title,
+                content,
+                isPinned,
+            );
+            if (!result.success) {
+                toast.error(result.error);
+                return;
+            }
             setNotices((prev) =>
-                prev
-                    .map((n) =>
-                        n.id === editTarget.id ? { ...n, title, content, is_pinned: isPinned } : n,
-                    )
-                    .sort((a, b) => {
-                        if (a.is_pinned && !b.is_pinned) return -1;
-                        if (!a.is_pinned && b.is_pinned) return 1;
-                        return 0;
-                    }),
+                sortNotices(prev.map((n) => (n.id === editTarget.id ? result.data : n))),
             );
             toast.success("공지가 수정되었습니다.");
         } else {
-            // 생성 더미 처리
-            const newNotice: NoticeRow = {
-                id: `notice-${Date.now()}`,
-                meeting_id: "meeting-001",
-                author_id: "host-001",
-                title,
-                content,
-                is_pinned: isPinned,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            };
-            setNotices((prev) =>
-                [newNotice, ...prev].sort((a, b) => {
-                    if (a.is_pinned && !b.is_pinned) return -1;
-                    if (!a.is_pinned && b.is_pinned) return 1;
-                    return 0;
-                }),
-            );
+            // 새 공지 생성 — Server Action 호출
+            const result = await createNoticeAction(meetingId, title, content, isPinned);
+            if (!result.success) {
+                toast.error(result.error);
+                return;
+            }
+            setNotices((prev) => sortNotices([result.data, ...prev]));
             toast.success("공지가 작성되었습니다.");
         }
     }
 
-    function handleDelete(id: string) {
-        setNotices((prev) => prev.filter((n) => n.id !== id));
+    async function handleDelete(noticeId: string) {
+        // 공지 삭제 — Server Action 호출
+        const result = await deleteNoticeAction(noticeId, meetingId);
+        if (!result.success) {
+            toast.error(result.error);
+            return;
+        }
+        setNotices((prev) => prev.filter((n) => n.id !== noticeId));
         toast.success("공지가 삭제되었습니다.");
     }
 
@@ -240,8 +247,9 @@ export function NoticesTab({ meetingId: _meetingId, isHost }: NoticesTabProps) {
             )}
 
             <NoticeDialog
+                key={`${editTarget?.id ?? "new"}-${dialogOpen}`}
                 open={dialogOpen}
-                onOpenChange={setDialogOpen}
+                onOpenChange={handleDialogOpenChange}
                 initialData={editTarget}
                 onSave={handleSave}
             />

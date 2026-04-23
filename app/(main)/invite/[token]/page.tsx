@@ -2,11 +2,10 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import {
-    getMockMeetingByToken,
-    getMockIsHost,
-    getMockMyParticipation,
-    getMockParticipationStats,
-} from "@/lib/mock-data";
+    getMeetingByTokenAction,
+    getMyParticipationAction,
+    getParticipationStatsAction,
+} from "@/lib/actions/participation";
 import { InviteView } from "@/components/invite-view";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,9 +36,10 @@ async function InviteContent({ token }: { token: string }) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getClaims();
     const isLoggedIn = !!data?.claims;
+    const userId = data?.claims?.sub ?? null;
 
-    // 더미 모임 데이터 조회 (Phase 3에서 실제 DB 조회로 교체)
-    const meeting = getMockMeetingByToken(token);
+    // 실제 DB 조회 (anon 접근 가능 — meetings_anon_select RLS 허용)
+    const meeting = await getMeetingByTokenAction(token);
 
     if (!meeting) {
         return (
@@ -52,12 +52,19 @@ async function InviteContent({ token }: { token: string }) {
         );
     }
 
-    // 주최자 여부 및 참가 상태 확인 (Phase 3에서 실제 DB 조회로 교체)
-    const isHost = isLoggedIn ? getMockIsHost(meeting.id) : false;
-    const myParticipation = isLoggedIn && !isHost ? getMockMyParticipation(meeting.id) : null;
-    const initialParticipationStatus = (myParticipation?.status ??
-        null) as ParticipationStatus | null;
-    const stats = getMockParticipationStats(meeting.id);
+    // 주최자 여부 확인 (로그인된 경우만)
+    const isHost = isLoggedIn && userId ? meeting.host_id === userId : false;
+
+    // 내 참가 상태 조회 (로그인된 비주최자만)
+    let initialParticipationStatus: ParticipationStatus | null = null;
+    if (isLoggedIn && !isHost && userId) {
+        const myParticipation = await getMyParticipationAction(meeting.id);
+        initialParticipationStatus = (myParticipation?.status ??
+            null) as ParticipationStatus | null;
+    }
+
+    // 참가 통계 조회 (approved 수를 총 참가자 수로 표시)
+    const stats = await getParticipationStatsAction(meeting.id);
 
     return (
         <InviteView
@@ -66,8 +73,8 @@ async function InviteContent({ token }: { token: string }) {
             token={token}
             isHost={isHost}
             initialParticipationStatus={initialParticipationStatus}
-            hostName={meeting.host.full_name ?? "주최자"}
-            totalParticipantCount={stats.total}
+            hostName={meeting.host?.full_name ?? "주최자"}
+            totalParticipantCount={stats.approved}
         />
     );
 }
