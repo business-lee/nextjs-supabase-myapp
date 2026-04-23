@@ -38,26 +38,17 @@ async function AdminContent({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <>
-            {/* 개발 모드 배너 - 프로덕션에서는 표시 안됨 */}
-            {process.env.NODE_ENV === "development" && (
-                <div className="border-b border-yellow-300 bg-yellow-100 px-4 py-2 text-center text-sm text-yellow-800">
-                    ⚠ 개발 모드: Admin 접근 중
+        <div className="flex min-h-screen">
+            {/* 사이드바 — AdminSidebar 클라이언트 컴포넌트로 활성 메뉴 처리 */}
+            <aside className="bg-admin-primary w-64 shrink-0">
+                <div className="sticky top-0 h-screen">
+                    <AdminSidebar user={user} />
                 </div>
-            )}
+            </aside>
 
-            <div className="flex min-h-screen">
-                {/* 사이드바 — AdminSidebar 클라이언트 컴포넌트로 활성 메뉴 처리 */}
-                <aside className="bg-admin-primary w-64 shrink-0">
-                    <div className="sticky top-0 h-screen">
-                        <AdminSidebar user={user} />
-                    </div>
-                </aside>
-
-                {/* 메인 콘텐츠 영역 */}
-                <main className="flex-1 p-8">{children}</main>
-            </div>
-        </>
+            {/* 메인 콘텐츠 영역 */}
+            <main className="flex-1 p-8">{children}</main>
+        </div>
     );
 }
 

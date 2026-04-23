@@ -419,10 +419,14 @@ export type Database = {
             };
             is_admin: { Args: never; Returns: boolean };
             // 대기자 자동 승급 처리 함수 (SECURITY DEFINER)
-            // 승인/거절 후 대기자 명단에서 waitlist_order가 가장 낮은 사용자를 approved로 승급
             promote_waitlist: {
                 Args: { p_meeting_id: string };
                 Returns: undefined;
+            };
+            // 정산 공유 페이지용 공개 조회 함수 (SECURITY DEFINER, anon 접근 가능)
+            get_public_settlement: {
+                Args: { p_settlement_id: string };
+                Returns: Json;
             };
         };
         Enums: {

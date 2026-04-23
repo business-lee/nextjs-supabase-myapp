@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Share2, Trash2 } from "lucide-react";
 import {
     createOrUpdateSettlementAction,
     addSettlementItemAction,
@@ -232,8 +232,24 @@ export function SettlementTab({
 
             {/* 납부 현황 테이블 */}
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
                     <CardTitle className="text-base">납부 현황</CardTitle>
+                    {settlement && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            onClick={async () => {
+                                await navigator.clipboard.writeText(
+                                    `${window.location.origin}/share/settlement/${settlement.id}`,
+                                );
+                                toast.success("정산 공유 링크가 복사되었습니다.");
+                            }}
+                        >
+                            <Share2 size={13} />
+                            공유
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3">
                     {participants.length === 0 && (

@@ -7,21 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { translateAuthError } from "@/lib/auth-errors";
 
-interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
-    redirectTo?: string;
-}
+type LoginFormProps = React.ComponentPropsWithoutRef<"div">;
 
-export function LoginForm({ className, redirectTo, ...props }: LoginFormProps) {
+export function LoginForm({ className, ...props }: LoginFormProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get("redirect") ?? undefined;
 
     const safeRedirect = redirectTo?.startsWith("/") ? redirectTo : "/protected";
 

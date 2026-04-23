@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { getMockAdminStats, getMockRecentMeetings, getMockRecentUsers } from "@/lib/mock-data";
+import {
+    getAdminDashboardStatsAction,
+    getAdminRecentMeetingsAction,
+    getAdminRecentUsersAction,
+} from "@/lib/actions/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,10 +24,12 @@ function StatusBadge({ status }: { status: string }) {
     return <Badge variant="outline">{status}</Badge>;
 }
 
-export default function AdminPage() {
-    const stats = getMockAdminStats();
-    const recentMeetings = getMockRecentMeetings(5);
-    const recentUsers = getMockRecentUsers(5);
+export default async function AdminPage() {
+    const [stats, recentMeetings, recentUsers] = await Promise.all([
+        getAdminDashboardStatsAction(),
+        getAdminRecentMeetingsAction(5),
+        getAdminRecentUsersAction(5),
+    ]);
 
     const statCards = [
         { title: "총 모임 수", value: stats.total_meetings },

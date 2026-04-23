@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
                 password,
             });
             if (signInError) throw signInError;
-            router.push("/admin");
+            router.refresh();
         } catch (err: unknown) {
             setError(translateAuthError(err instanceof Error ? err.message : "An error occurred"));
         } finally {
