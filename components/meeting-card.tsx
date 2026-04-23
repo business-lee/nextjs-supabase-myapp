@@ -49,12 +49,19 @@ function getStatusLabel(status: MeetingStatus): string {
 function formatEventDate(eventAt: string): string {
     const date = new Date(eventAt);
     const dateStr = date.toLocaleDateString("ko-KR", {
+        timeZone: "Asia/Seoul",
         month: "long",
         day: "numeric",
         weekday: "short",
     });
-    const hh = date.getHours().toString().padStart(2, "0");
-    const mm = date.getMinutes().toString().padStart(2, "0");
+    const parts = new Intl.DateTimeFormat("ko-KR", {
+        timeZone: "Asia/Seoul",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    }).formatToParts(date);
+    const hh = parts.find((p) => p.type === "hour")?.value ?? "00";
+    const mm = parts.find((p) => p.type === "minute")?.value ?? "00";
     return `${dateStr} ${hh}:${mm}`;
 }
 
