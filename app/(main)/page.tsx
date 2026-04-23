@@ -52,7 +52,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col gap-3 pb-4">
-                    <Button asChild size="lg" className="w-full">
+                    <Button asChild size="lg">
                         <Link href="/auth/login?redirect=/protected/meetings/new">모임 만들기</Link>
                     </Button>
                     <Suspense>

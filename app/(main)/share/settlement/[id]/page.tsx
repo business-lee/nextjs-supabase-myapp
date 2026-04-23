@@ -1,7 +1,11 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, Circle } from "lucide-react";
 
 // ─────────────────────────────────────────────
@@ -53,15 +57,32 @@ async function getPublicSettlement(settlementId: string): Promise<PublicSettleme
 }
 
 // ─────────────────────────────────────────────
-// 페이지 컴포넌트
+// 스켈레톤 로딩
 // ─────────────────────────────────────────────
 
-interface PageProps {
-    params: Promise<{ id: string }>;
+function SettlementPageSkeleton() {
+    return (
+        <div className="mx-auto max-w-[530px] space-y-4 p-4 pb-8">
+            <div className="pt-4 text-center">
+                <Skeleton className="mx-auto h-4 w-20" />
+                <Skeleton className="mx-auto mt-2 h-7 w-48" />
+            </div>
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
+    );
 }
 
-export default async function ShareSettlementPage({ params }: PageProps) {
-    const { id } = await params;
+// ─────────────────────────────────────────────
+// 컨텐츠 컴포넌트
+// ─────────────────────────────────────────────
+
+interface SettlementContentProps {
+    id: string;
+}
+
+async function SettlementContent({ id }: SettlementContentProps) {
     const data = await getPublicSettlement(id);
 
     if (!data) {
@@ -194,5 +215,23 @@ export default async function ShareSettlementPage({ params }: PageProps) {
                 이 페이지는 공유 링크로 접속한 읽기 전용 페이지입니다.
             </p>
         </div>
+    );
+}
+
+// ─────────────────────────────────────────────
+// 페이지 컴포넌트
+// ─────────────────────────────────────────────
+
+interface PageProps {
+    params: Promise<{ id: string }>;
+}
+
+export default async function ShareSettlementPage({ params }: PageProps) {
+    const { id } = await params;
+
+    return (
+        <Suspense fallback={<SettlementPageSkeleton />}>
+            <SettlementContent id={id} />
+        </Suspense>
     );
 }
